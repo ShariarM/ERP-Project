@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Information Management</title>
+</head>
+<body class="min-h-screen bg-slate-100">
+  <header id="app-header"></header>
+  <main class="p-6 max-w-6xl mx-auto space-y-6">
+    <h2 class="text-xl font-semibold text-slate-800">Customer Information Management</h2>
+
+    <form id="customer-form" class="hidden bg-white p-4 rounded-xl shadow grid gap-3 md:grid-cols-5">
+      <input name="name" placeholder="Name *" required class="border rounded-lg px-3 py-2" />
+      <input name="email" type="email" placeholder="Email" class="border rounded-lg px-3 py-2" />
+      <input name="phone" placeholder="Phone" class="border rounded-lg px-3 py-2" />
+      <input name="company" placeholder="Company" class="border rounded-lg px-3 py-2" />
+      <button class="bg-indigo-600 text-white rounded-lg px-3 py-2 hover:bg-indigo-700">Add customer</button>
+      <p id="form-error" class="text-sm text-red-600 md:col-span-5"></p>
+    </form>
+
+    <p id="readonly-note" class="hidden text-sm text-slate-500">You have read-only access to customer information.</p>
+
+    <div class="bg-white rounded-xl shadow overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-left"><tr><th class="p-3">Name</th><th class="p-3">Email</th><th class="p-3">Phone</th><th class="p-3">Company</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </main>
+  <script type="module" src="/src/js/customers.js"></script>
+</body>
+</html>
