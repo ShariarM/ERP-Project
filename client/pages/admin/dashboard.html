@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+</head>
+<body class="min-h-screen bg-slate-100">
+  <header id="app-header"></header>
+  <main class="p-6 max-w-6xl mx-auto space-y-6">
+    <h2 class="text-xl font-semibold text-slate-800">Admin Dashboard</h2>
+
+    <div class="grid gap-4 md:grid-cols-3">
+      <div class="bg-white p-6 rounded-xl shadow"><p class="text-sm text-slate-500">Customers</p><p id="stat-customers" class="text-3xl font-bold">-</p></div>
+      <div class="bg-white p-6 rounded-xl shadow"><p class="text-sm text-slate-500">Sales recorded</p><p id="stat-sales" class="text-3xl font-bold">-</p></div>
+      <div class="bg-white p-6 rounded-xl shadow"><p class="text-sm text-slate-500">Total sales amount</p><p id="stat-total" class="text-3xl font-bold">-</p></div>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-2">
+      <a href="/pages/customers/index.html" class="bg-white p-6 rounded-xl shadow hover:shadow-md">
+        <p class="font-semibold">Customer Information Management</p>
+        <p class="text-sm text-slate-500">Sales and marketing employees</p>
+      </a>
+      <a href="/pages/accounting/index.html" class="bg-white p-6 rounded-xl shadow hover:shadow-md">
+        <p class="font-semibold">Accounting</p>
+        <p class="text-sm text-slate-500">Automatic sales total, accounting employee</p>
+      </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow overflow-x-auto">
+      <h3 class="font-semibold p-4">Staff accounts</h3>
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-left"><tr><th class="p-3">Name</th><th class="p-3">Email</th><th class="p-3">Role</th><th class="p-3">Department</th></tr></thead>
+        <tbody id="staff"></tbody>
+      </table>
+    </div>
+  </main>
+  <script type="module" src="/src/js/admin.js"></script>
+</body>
+</html>
