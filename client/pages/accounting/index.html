@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accounting</title>
+</head>
+<body class="min-h-screen bg-slate-100">
+  <header id="app-header"></header>
+  <main class="p-6 max-w-6xl mx-auto space-y-6">
+    <h2 class="text-xl font-semibold text-slate-800">Accounting: Sales Total</h2>
+
+    <div class="grid gap-4 md:grid-cols-2">
+      <div class="bg-white p-6 rounded-xl shadow"><p class="text-sm text-slate-500">Grand total of all sales</p><p id="grand-total" class="text-3xl font-bold">-</p></div>
+      <div class="bg-white p-6 rounded-xl shadow"><p class="text-sm text-slate-500">Number of sales</p><p id="sales-count" class="text-3xl font-bold">-</p></div>
+    </div>
+
+    <form id="sale-form" class="bg-white p-4 rounded-xl shadow grid gap-3 md:grid-cols-6 items-end">
+      <label class="md:col-span-2 text-sm">Customer
+        <select name="customerId" required class="mt-1 w-full border rounded-lg px-3 py-2"></select>
+      </label>
+      <label class="text-sm">Product
+        <input name="product" required class="mt-1 w-full border rounded-lg px-3 py-2" />
+      </label>
+      <label class="text-sm">Quantity
+        <input name="quantity" type="number" min="1" step="1" required class="mt-1 w-full border rounded-lg px-3 py-2" />
+      </label>
+      <label class="text-sm">Unit price
+        <input name="unitPrice" type="number" min="0" step="0.01" required class="mt-1 w-full border rounded-lg px-3 py-2" />
+      </label>
+      <div>
+        <p class="text-sm text-slate-500">Total (auto)</p>
+        <p id="live-total" class="text-xl font-bold">0.00</p>
+      </div>
+      <button class="bg-indigo-600 text-white rounded-lg px-3 py-2 hover:bg-indigo-700 md:col-span-6 md:justify-self-start">Record sale</button>
+      <p id="form-error" class="text-sm text-red-600 md:col-span-6"></p>
+    </form>
+
+    <div class="bg-white rounded-xl shadow overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-left"><tr><th class="p-3">Date</th><th class="p-3">Customer</th><th class="p-3">Product</th><th class="p-3">Qty</th><th class="p-3">Unit price</th><th class="p-3">Total</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </main>
+  <script type="module" src="/src/js/accounting.js"></script>
+</body>
+</html>
