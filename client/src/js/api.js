@@ -1,83 +1,54 @@
-// DATA LAYER.
-// Every page talks to the data ONLY through these functions.
-// Today they read the mock data. Later, replace the body of each function
-// with a fetch('/api/...') call to the MySQL backend; no page needs to change.
+const BASE = '/api';
 
-import { USERS, db } from './data/mockData.js';
-import { ROLE_HOME } from './roles.js';
+function getToken() { return localStorage.getItem('token'); }
 
-const wait = (value) => new Promise((resolve) => setTimeout(() => resolve(value), 120));
+async function request(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  const token = getToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
 
-// The "automatic calculation": total = quantity x unit price
-export const calcTotal = (quantity, unitPrice) =>
-  Math.round(Number(quantity) * Number(unitPrice) * 100) / 100;
+  const res = await fetch(`${BASE}${path}`, { ...options, headers });
 
-// ---- session ----
-export const getSession = () => JSON.parse(sessionStorage.getItem('erp_user') || 'null');
-export const logout = () => sessionStorage.removeItem('erp_user');
+  let data = null;
+  try { data = await res.json(); } catch {}
 
-export async function login(email, password) {
-  const found = USERS.find(
-    (u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password
-  );
-  if (!found) throw new Error('Wrong email or password');
-  const { password: _hidden, ...user } = found; // never keep the password in the session
-  sessionStorage.setItem('erp_user', JSON.stringify(user));
-  return wait({ user, redirect: ROLE_HOME[user.role] });
+  if (res.status === 401) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    if (window.location.pathname !== '/') window.location.href = '/';
+  }
+
+  if (!res.ok) throw new Error((data && data.error) || `Request failed (${res.status})`);
+  return data;
 }
 
-// ---- users ----
-export const getUsers = () => wait(USERS.map(({ password, ...u }) => u));
+export const login          = (username, password) =>
+  request('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) });
+export const me             = () => request('/auth/me');
 
-// ---- customers ----
-export const getCustomers = () => wait([...db.get().customers]);
+export const listCustomers  = () => request('/customers');
+export const createCustomer = (c) => request('/customers', { method: 'POST', body: JSON.stringify(c) });
+export const updateCustomer = (id, c) => request(`/customers/${id}`, { method: 'PUT', body: JSON.stringify(c) });
+export const deleteCustomer = (id) => request(`/customers/${id}`, { method: 'DELETE' });
 
-export async function addCustomer({ name, email, phone, company }) {
-  if (!name.trim()) throw new Error('Customer name is required');
-  const list = db.get().customers;
-  const customer = { id: Math.max(0, ...list.map((c) => c.id)) + 1, name: name.trim(), email, phone, company };
-  list.push(customer);
-  db.save();
-  return wait(customer);
-}
+export const listSales      = () => request('/sales');
+export const createSale     = (s) => request('/sales', { method: 'POST', body: JSON.stringify(s) });
+export const deleteSale     = (id) => request(`/sales/${id}`, { method: 'DELETE' });
+export const salesSummary   = () => request('/sales/summary');
+// ADD THIS BELOW THE login EXPORT
+export const signup = (username, password, role) =>
+  request('/auth/signup', { method: 'POST', body: JSON.stringify({ username, password, role }) });
+// Attendance
+export const clockIn = () => request('/attendance/clock-in', { method: 'POST' });
+export const clockOut = () => request('/attendance/clock-out', { method: 'POST' });
+export const getMyAttendance = () => request('/attendance/my-logs');
 
-// ---- sales ----
-export async function getSales() {
-  const { sales, customers } = db.get();
-  return wait(
-    sales
-      .map((s) => ({
-        ...s,
-        customerName: customers.find((c) => c.id === s.customerId)?.name ?? 'Unknown',
-        total: calcTotal(s.quantity, s.unitPrice),
-      }))
-      .sort((a, b) => b.id - a.id)
-  );
-}
+// Leave
+export const applyLeave = (data) => request('/leave/apply', { method: 'POST', body: JSON.stringify(data) });
+export const getLeaves = () => request('/leave');
+export const updateLeaveStatus = (id, status) => request(`/leave/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) });
 
-export async function addSale({ customerId, product, quantity, unitPrice }) {
-  if (!customerId) throw new Error('Choose a customer');
-  if (!product.trim()) throw new Error('Product is required');
-  if (!(Number(quantity) > 0)) throw new Error('Quantity must be more than 0');
-  if (!(Number(unitPrice) >= 0)) throw new Error('Unit price cannot be negative');
-  const list = db.get().sales;
-  const sale = {
-    id: Math.max(0, ...list.map((s) => s.id)) + 1,
-    customerId: Number(customerId),
-    product: product.trim(),
-    quantity: Number(quantity),
-    unitPrice: Number(unitPrice),
-    date: new Date().toISOString().slice(0, 10),
-  };
-  list.push(sale);
-  db.save();
-  return wait(sale);
-}
-
-export async function getSummary() {
-  const sales = await getSales();
-  return {
-    salesCount: sales.length,
-    grandTotal: sales.reduce((sum, s) => sum + s.total, 0),
-  };
-}
+// Online status (admin dashboard shows who is active)
+export const heartbeat = () => request('/auth/heartbeat', { method: 'POST' });
+export const logoutServer = () => request('/auth/logout', { method: 'POST' });
+export const activeUsers = () => request('/auth/active-users');

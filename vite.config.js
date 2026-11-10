@@ -1,27 +1,29 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
-import tailwindcss from 'tailwindcss';
-import autoprefixer from 'autoprefixer';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-const here = (p) => resolve(process.cwd(), p);
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Vite root is /client. Every HTML page is listed so "npm run build" bundles them all.
 export default defineConfig({
   root: 'client',
-  css: {
-    postcss: { plugins: [tailwindcss(here('tailwind.config.js')), autoprefixer()] },
+  server: {
+    port: 5173,
+    proxy: { '/api': 'http://localhost:5000' }
   },
-  server: { port: 5173, open: true },
   build: {
     outDir: '../dist',
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        login: here('client/index.html'),
-        admin: here('client/pages/admin/dashboard.html'),
-        customers: here('client/pages/customers/index.html'),
-        accounting: here('client/pages/accounting/index.html'),
-      },
-    },
-  },
+        main:       resolve(__dirname, 'client/index.html'),
+        signup:     resolve(__dirname, 'client/pages/signup/signup.html'), // NEW
+        dashboard:  resolve(__dirname, 'client/pages/admin/dashboard.html'),
+        customers:  resolve(__dirname, 'client/pages/customers/index.html'),
+        accounting: resolve(__dirname, 'client/pages/accounting/index.html'),
+        marketing:  resolve(__dirname, 'client/pages/marketing/index.html'), // NEW
+        attendance: resolve(__dirname, 'client/pages/attendance/index.html'),
+        leave: resolve(__dirname, 'client/pages/leave/index.html'),
+      }
+    }
+  }
 });

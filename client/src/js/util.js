@@ -1,9 +1,9 @@
-// Escape text before putting it into innerHTML (prevents HTML injection).
-export function esc(value) {
-  return String(value ?? '').replace(/[&<>"']/g, (c) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+export function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[c]));
 }
 
-export const money = (n) =>
-  Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+export function money(n) {
+  return Number(n || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}

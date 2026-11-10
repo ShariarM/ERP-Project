@@ -1,30 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ERP Login</title>
+  <link rel="stylesheet" href="/src/css/main.css" />
 </head>
-<body class="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-  <div class="w-full max-w-sm space-y-4">
-    <form id="login-form" class="bg-white p-8 rounded-xl shadow space-y-4">
-      <div>
-        <h1 class="text-2xl font-bold text-slate-800">ERP System</h1>
-        <p class="text-sm text-slate-500">Sign in to your department</p>
-      </div>
-      <input name="email" type="email" placeholder="Email" required autocomplete="username"
-             class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-      <input name="password" type="password" placeholder="Password" required autocomplete="current-password"
-             class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-      <p id="error" class="text-sm text-red-600 min-h-[1.25rem]"></p>
-      <button class="w-full bg-indigo-600 text-white rounded-lg py-2 font-medium hover:bg-indigo-700">Login</button>
-    </form>
 
-    <div class="bg-white p-4 rounded-xl shadow text-sm">
-      <p class="font-medium text-slate-700 mb-2">Demo accounts (click to fill)</p>
-      <div id="demo" class="grid grid-cols-2 gap-2"></div>
+<body class="min-h-screen flex items-center justify-center bg-slate-100">
+  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
+    <h1 class="text-2xl font-bold mb-6 text-center text-slate-800">ERP Login</h1>
+    <form id="loginForm" class="space-y-4">
+      <input id="username" type="text" placeholder="Username" required value="admin"
+        class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <input id="password" type="password" placeholder="Password" required value="admin123"
+        class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-medium">
+        Sign In
+      </button>
+      <!-- Add this right below the submit button inside the form -->
+      <p class="text-center text-sm text-slate-600 mt-4">
+        Don't have an account? <a href="/pages/signup/signup.html" class="text-blue-600 hover:underline">Sign up</a>
+      </p>
+      <p id="error" class="text-red-600 text-sm hidden text-center"></p>
+    </form>
+    <div class="mt-6 text-xs text-slate-500 text-center space-y-1">
+      <p><b>admin / admin123</b> — full access</p>
+      <p><b>sales / sales123</b> — customers</p>
+      <p><b>accounting / accounting123</b> — accounting</p>
+      <p><b>marketing / marketing123</b> — marketing</p>
     </div>
   </div>
   <script type="module" src="/src/js/login.js"></script>
 </body>
+
 </html>

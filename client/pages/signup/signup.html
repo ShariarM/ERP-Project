@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ERP Signup</title>
+  <link rel="stylesheet" href="/src/css/main.css" />
+</head>
+<body class="min-h-screen flex items-center justify-center bg-slate-100">
+  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
+    <h1 class="text-2xl font-bold mb-6 text-center text-slate-800">Create an Account</h1>
+    <form id="signupForm" class="space-y-4">
+      <input id="username" type="text" placeholder="Username" required
+        class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      
+      <input id="password" type="password" placeholder="Password" required
+        class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      
+      <select id="role" required
+        class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+        <option value="" disabled selected>Select your department...</option>
+        <option value="sales">Sales</option>
+        <option value="accounting">Accounting</option>
+        <option value="marketing">Marketing</option>
+      </select>
+
+      <button type="submit"
+        class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-medium">
+        Sign Up
+      </button>
+      <p id="error" class="text-red-600 text-sm hidden text-center"></p>
+    </form>
+    <p class="text-center text-sm text-slate-600 mt-4">
+      Already have an account? <a href="/" class="text-blue-600 hover:underline">Log in</a>
+    </p>
+  </div>
+  <script type="module" src="/src/js/signup.js"></script>
+</body>
+</html>
