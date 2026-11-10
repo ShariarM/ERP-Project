@@ -1,20 +1,19 @@
-// Who lands where after login, and which menu links each role sees.
-export const ROLE_HOME = {
-  admin: '/pages/admin/dashboard.html',
-  sales: '/pages/customers/index.html',
-  marketing: '/pages/customers/index.html',
-  accountant: '/pages/accounting/index.html',
+export const ROLES = {
+  admin:      { label: 'Administrator', home: '/pages/admin/dashboard.html' },
+  sales:      { label: 'Sales',         home: '/pages/customers/index.html' },
+  accounting: { label: 'Accounting',    home: '/pages/accounting/index.html' },
+  marketing:  { label: 'Marketing',     home: '/pages/marketing/index.html' }
 };
 
-export const NAV = [
+// Sidebar menu: which roles see which link
+export const MENU = [
   { label: 'Dashboard',  href: '/pages/admin/dashboard.html',  roles: ['admin'] },
-  { label: 'Customers',  href: '/pages/customers/index.html',  roles: ['admin', 'sales', 'marketing'] },
-  { label: 'Accounting', href: '/pages/accounting/index.html', roles: ['admin', 'accountant'] },
+  { label: 'Customers',  href: '/pages/customers/index.html',  roles: ['admin', 'sales'] },
+  { label: 'Accounting', href: '/pages/accounting/index.html', roles: ['admin', 'accounting'] },
+  { label: 'Marketing',  href: '/pages/marketing/index.html',  roles: ['admin', 'marketing'] },
+  { label: 'Attendance', href: '/pages/attendance/index.html', roles: ['admin', 'sales', 'accounting', 'marketing'] },
+  { label: 'Leave',      href: '/pages/leave/index.html',      roles: ['admin', 'sales', 'accounting', 'marketing'] }
 ];
 
-export const ROLE_LABEL = {
-  admin: 'Admin',
-  sales: 'Sales Employee',
-  marketing: 'Marketing Employee',
-  accountant: 'Accounting Employee',
-};
+export const homeFor = (role) => ROLES[role]?.home || '/';
+export const menuFor = (role) => MENU.filter(m => m.roles.includes(role));

@@ -1,45 +1,78 @@
-import '../css/main.css';
-import { protect } from './guard.js';
-import { getCustomers, addCustomer } from './api.js';
+import { guard, renderTopbar } from './guard.js';
+import { listCustomers, createCustomer, updateCustomer, deleteCustomer } from './api.js';
 import { esc } from './util.js';
 
-const rows = document.getElementById('rows');
-const form = document.getElementById('customer-form');
-const formError = document.getElementById('form-error');
+const user = guard(['admin', 'sales']);
+if (user) {
+  renderTopbar(user);
 
-async function render() {
-  const customers = await getCustomers();
-  rows.innerHTML = customers
-    .map((c) => `<tr class="border-t"><td class="p-3">${esc(c.name)}</td><td class="p-3">${esc(c.email)}</td><td class="p-3">${esc(c.phone)}</td><td class="p-3">${esc(c.company)}</td></tr>`)
-    .join('');
-}
+  const form   = document.getElementById('customerForm');
+  const tbody  = document.getElementById('tbody');
+  const errEl  = document.getElementById('err');
+  let cache = [];
 
-async function init() {
-  const user = protect(['sales', 'marketing']);
-  if (!user) return;
-
-  // Only sales (and admin) may add customers. Marketing is read-only.
-  const canEdit = user.role === 'admin' || user.role === 'sales';
-  form.classList.toggle('hidden', !canEdit);
-  document.getElementById('readonly-note').classList.toggle('hidden', canEdit);
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    formError.textContent = '';
+  async function refresh() {
     try {
-      await addCustomer({
-        name: form.name.value,
-        email: form.email.value,
-        phone: form.phone.value,
-        company: form.company.value,
-      });
-      form.reset();
-      render();
-    } catch (err) {
-      formError.textContent = err.message;
+      cache = await listCustomers();
+      tbody.innerHTML = cache.map(r => `
+        <tr class="border-t">
+          <td class="p-2">${r.id}</td>
+          <td class="p-2">${esc(r.name)}</td>
+          <td class="p-2">${esc(r.email)}</td>
+          <td class="p-2">${esc(r.phone)}</td>
+          <td class="p-2">${esc(r.address)}</td>
+          <td class="p-2">
+            <button data-edit="${r.id}"
+              class="text-blue-600 hover:underline mr-3">Edit</button>
+            <button data-del="${r.id}"
+              class="text-red-600 hover:underline">Delete</button>
+          </td>
+        </tr>`).join('');
+    } catch (err) { errEl.textContent = err.message; }
+  }
+
+  tbody.addEventListener('click', async (e) => {
+    const editBtn = e.target.closest('[data-edit]');
+    const delBtn  = e.target.closest('[data-del]');
+
+    if (editBtn) {
+      const r = cache.find(x => String(x.id) === editBtn.dataset.edit);
+      if (!r) return;
+      document.getElementById('id').value      = r.id;
+      document.getElementById('name').value    = r.name || '';
+      document.getElementById('email').value   = r.email || '';
+      document.getElementById('phone').value   = r.phone || '';
+      document.getElementById('address').value = r.address || '';
+    } else if (delBtn) {
+      if (!confirm('Delete this customer?')) return;
+      try { await deleteCustomer(delBtn.dataset.del); await refresh(); }
+      catch (err) { errEl.textContent = err.message; }
     }
   });
 
-  render();
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errEl.textContent = '';
+    const id = document.getElementById('id').value;
+    const data = {
+      name:    document.getElementById('name').value.trim(),
+      email:   document.getElementById('email').value.trim(),
+      phone:   document.getElementById('phone').value.trim(),
+      address: document.getElementById('address').value.trim()
+    };
+    try {
+      if (id) await updateCustomer(id, data);
+      else    await createCustomer(data);
+      form.reset();
+      document.getElementById('id').value = '';
+      await refresh();
+    } catch (err) { errEl.textContent = err.message; }
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    form.reset();
+    document.getElementById('id').value = '';
+  });
+
+  refresh();
 }
-init();

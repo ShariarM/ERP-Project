@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attendance</title>
+  <link rel="stylesheet" href="/src/css/main.css" />
+</head>
+<body class="min-h-screen bg-slate-100">
+  <div id="topbar"></div>
+  <main class="ml-64 p-8 min-h-screen bg-slate-100">
+    <h1 class="text-2xl font-bold mb-6 text-slate-800">Attendance Management</h1>
+
+    <div class="bg-white p-6 rounded-lg shadow mb-6 flex gap-4 items-center">
+      <button id="btnClockIn" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-medium">Clock In</button>
+      <button id="btnClockOut" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 font-medium">Clock Out</button>
+      <p id="msg" class="text-sm font-medium ml-4"></p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-200 text-slate-700">
+          <tr>
+            <th class="text-left p-3">Date</th>
+            <th class="text-left p-3">Clock In</th>
+            <th class="text-left p-3">Clock Out</th>
+          </tr>
+        </thead>
+        <tbody id="logTable"></tbody>
+      </table>
+    </div>
+  </main>
+  <script type="module" src="/src/js/attendance.js"></script>
+</body>
+</html>

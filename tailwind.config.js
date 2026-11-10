@@ -1,5 +1,5 @@
 export default {
-  content: ['./client/**/*.{html,js}'],
+  content: ['./client/**/*.html', './client/src/**/*.js'],
   theme: { extend: {} },
-  plugins: [],
+  plugins: []
 };
