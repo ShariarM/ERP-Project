@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tasks</title>
+  <link rel="stylesheet" href="/src/css/main.css" />
+</head>
+<body class="min-h-screen bg-slate-100">
+  <div id="topbar"></div>
+  <main class="ml-64 p-8 min-h-screen bg-slate-100">
+    <div class="p-6 max-w-6xl mx-auto">
+      <h1 class="text-2xl font-bold mb-6 text-slate-800">Task Dashboard</h1>
+      <p id="taskError" class="text-red-600 mb-4 empty:hidden"></p>
+
+      <section id="createTaskSection" class="hidden bg-white p-6 rounded-lg shadow mb-8">
+        <h2 class="font-semibold text-lg mb-4 text-slate-700">Assign a Task</h2>
+        <form id="taskForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input id="taskTitle" maxlength="150" placeholder="Task title" required class="px-3 py-2 border rounded" />
+          <select id="taskAssignee" required class="px-3 py-2 border rounded">
+            <option value="" disabled selected>Select an employee</option>
+          </select>
+          <textarea id="taskDescription" placeholder="Description (optional)" rows="3"
+            class="px-3 py-2 border rounded md:col-span-2"></textarea>
+          <label class="text-sm text-slate-600 md:col-span-2">
+            Deadline
+            <input id="taskDeadline" type="date" required class="mt-1 w-full px-3 py-2 border rounded" />
+          </label>
+          <button class="md:col-span-2 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-medium">
+            Assign Task
+          </button>
+        </form>
+        <p id="taskMessage" class="text-sm mt-2"></p>
+      </section>
+
+      <section class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="p-4 border-b">
+          <h2 class="font-semibold text-slate-700">Assigned Tasks</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-200 text-slate-700">
+              <tr>
+                <th class="text-left p-3">Task</th>
+                <th class="text-left p-3">Description</th>
+                <th class="text-left p-3">Deadline</th>
+                <th id="assigneeHeader" class="text-left p-3 hidden">Assigned to</th>
+                <th class="text-left p-3">Status</th>
+              </tr>
+            </thead>
+            <tbody id="taskTable"></tbody>
+          </table>
+        </div>
+        <p id="emptyTasks" class="p-4 text-slate-500 hidden">No tasks assigned yet.</p>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="/src/js/tasks.js"></script>
+</body>
+</html>

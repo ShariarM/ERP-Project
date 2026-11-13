@@ -48,6 +48,13 @@ export const applyLeave = (data) => request('/leave/apply', { method: 'POST', bo
 export const getLeaves = () => request('/leave');
 export const updateLeaveStatus = (id, status) => request(`/leave/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) });
 
+// Tasks
+export const getTasks = () => request('/tasks');
+export const getTaskUsers = () => request('/tasks/users');
+export const createTask = (data) => request('/tasks', { method: 'POST', body: JSON.stringify(data) });
+export const updateTaskStatus = (id, status) =>
+  request(`/tasks/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
+
 // Online status (admin dashboard shows who is active)
 export const heartbeat = () => request('/auth/heartbeat', { method: 'POST' });
 export const logoutServer = () => request('/auth/logout', { method: 'POST' });

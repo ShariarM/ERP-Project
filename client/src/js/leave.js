@@ -7,6 +7,7 @@ if (user) {
   const form = document.getElementById('leaveForm');
   const table = document.getElementById('leaveTable');
   const msg = document.getElementById('msg');
+  const loadError = document.getElementById('loadError');
   
   // Show admin action column if user is admin
   if (user.role === 'admin') document.getElementById('adminActionHeader').style.display = 'table-cell';
@@ -14,6 +15,7 @@ if (user) {
   async function loadLeaves() {
     try {
       const leaves = await getLeaves();
+      loadError.textContent = '';
       table.innerHTML = leaves.map(l => `
         <tr class="border-t">
           <td class="p-3 font-medium">${l.username || user.username}</td>
@@ -27,14 +29,18 @@ if (user) {
             </span>
           </td>
           ${user.role === 'admin' ? `
-            <td class="p-3" ${l.status !== 'pending' ? 'style="display:none"' : ''}>
-              <button data-approve="${l.id}" class="text-green-600 hover:underline mr-2">Approve</button>
-              <button data-reject="${l.id}" class="text-red-600 hover:underline">Reject</button>
+            <td class="p-3">
+              ${l.status === 'pending' ? `
+                <button data-approve="${l.id}" class="text-green-600 hover:underline mr-2">Approve</button>
+                <button data-reject="${l.id}" class="text-red-600 hover:underline">Reject</button>
+              ` : '—'}
             </td>
           ` : ''}
         </tr>
       `).join('');
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      loadError.textContent = `Unable to load leave requests: ${err.message}`;
+    }
   }
 
   form.addEventListener('submit', async (e) => {

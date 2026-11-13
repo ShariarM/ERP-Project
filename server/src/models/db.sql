@@ -55,6 +55,19 @@ CREATE TABLE IF NOT EXISTS leave_requests (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS tasks (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  title       VARCHAR(150) NOT NULL,
+  description TEXT NULL,
+  deadline    DATE NOT NULL,
+  status      ENUM('pending','in_progress','completed') NOT NULL DEFAULT 'pending',
+  assigned_to INT NOT NULL,
+  assigned_by INT NULL,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
 -- Upgrade for databases imported BEFORE the marketing role existed. Safe to run again.
 ALTER TABLE users
   MODIFY role ENUM('admin','sales','marketing','accounting') NOT NULL DEFAULT 'sales';

@@ -11,6 +11,7 @@ export const MENU = [
   { label: 'Customers',  href: '/pages/customers/index.html',  roles: ['admin', 'sales'] },
   { label: 'Accounting', href: '/pages/accounting/index.html', roles: ['admin', 'accounting'] },
   { label: 'Marketing',  href: '/pages/marketing/index.html',  roles: ['admin', 'marketing'] },
+  { label: 'Tasks',      href: '/pages/tasks/index.html',      roles: ['admin', 'sales', 'accounting', 'marketing'] },
   { label: 'Attendance', href: '/pages/attendance/index.html', roles: ['admin', 'sales', 'accounting', 'marketing'] },
   { label: 'Leave',      href: '/pages/leave/index.html',      roles: ['admin', 'sales', 'accounting', 'marketing'] }
 ];

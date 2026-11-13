@@ -23,6 +23,7 @@ export default defineConfig({
         marketing:  resolve(__dirname, 'client/pages/marketing/index.html'), // NEW
         attendance: resolve(__dirname, 'client/pages/attendance/index.html'),
         leave: resolve(__dirname, 'client/pages/leave/index.html'),
+        tasks: resolve(__dirname, 'client/pages/tasks/index.html'),
       }
     }
   }

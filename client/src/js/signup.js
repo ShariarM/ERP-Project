@@ -1,5 +1,8 @@
 import { signup } from './api.js';
 import { homeFor } from './roles.js';
+import { startDateTime } from './date-time.js';
+
+startDateTime();
 
 const form    = document.getElementById('signupForm');
 const errorEl = document.getElementById('error');
