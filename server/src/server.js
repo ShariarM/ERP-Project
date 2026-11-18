@@ -15,6 +15,7 @@ import authRoutes from './routes/auth.routes.js';
 import customerRoutes from './routes/customer.routes.js';
 import salesRoutes from './routes/sales.routes.js';
 
+import inventoryRoutes from './routes/inventory.routes.js';
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -25,11 +26,12 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/accounting', salesRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/inventory', inventoryRoutes);
 app.use('/api/leave', leaveRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-// ─── Seed default users (idempotent) ─────────────────────────────
+// â”€â”€â”€ Seed default users (idempotent) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function ensurePresenceColumns() {
   const needed = [
     ['last_seen_at', 'DATETIME NULL'],
@@ -41,7 +43,7 @@ async function ensurePresenceColumns() {
         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = ?`, [col]);
     if (!rows[0].n) {
       await pool.query(`ALTER TABLE users ADD COLUMN ${col} ${def}`);
-      console.log(`✓ Added users.${col}`);
+      console.log(`âœ“ Added users.${col}`);
     }
   }
 }
@@ -61,17 +63,17 @@ async function seedUsers() {
         'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
         [username, hash, role]
       );
-      console.log(`✓ Seeded user: ${username} / ${password} (${role})`);
+      console.log(`âœ“ Seeded user: ${username} / ${password} (${role})`);
     }
   }
 }
 
 app.listen(PORT, async () => {
-  console.log(`🚀 Server on http://localhost:${PORT}`);
+  console.log(`ðŸš€ Server on http://localhost:${PORT}`);
   try {
     await ensurePresenceColumns();
     await seedUsers();
   } catch (err) {
-    console.warn('⚠ Could not seed users — did you import db.sql?', err.message);
+    console.warn('âš  Could not seed users â€” did you import db.sql?', err.message);
   }
 });
