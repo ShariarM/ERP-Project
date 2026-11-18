@@ -1,35 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Attendance</title>
-  <link rel="stylesheet" href="/src/css/main.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Management | ERP</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f7fb;color:#172033;font-family:Inter,Segoe UI,Arial,sans-serif}
+main{max-width:1450px;margin:auto;padding:30px}
+h1{font-size:29px;margin:8px 0;font-weight:800;letter-spacing:-.7px}
+h2{font-size:17px;margin:0;font-weight:800}
+.sub{color:#718096;font-size:13px}
+.eyebrow{font-size:11px;color:#64748b;font-weight:800;letter-spacing:1.4px}
+.header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.clock{font-size:13px;color:#64748b;text-align:right}
+.clock strong{display:block;font-size:19px;color:#172033;margin-bottom:4px}
+.actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+button{border:0;border-radius:10px;padding:12px 18px;font-weight:750;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.in{background:#059669;color:white}.out{background:#172033;color:white}
+.refresh{background:white;border:1px solid #e2e8f0;color:#334155}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:25px 0}
+.card,.panel{background:white;border:1px solid #e8edf4;border-radius:16px;padding:20px;box-shadow:0 4px 18px #17203308}
+.stat-label{font-size:12px;color:#718096;font-weight:650}
+.value{font-size:28px;font-weight:850;margin-top:12px;letter-spacing:-.8px}
+.note{font-size:11px;color:#94a3b8;margin-top:5px}
+.blue{color:#2563eb}.red{color:#dc2626}.green{color:#059669}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:550px}
+th{text-align:left;color:#94a3b8;font-size:10px;letter-spacing:.8px;text-transform:uppercase;padding:12px 9px;border-bottom:1px solid #edf1f6}
+td{padding:13px 9px;border-bottom:1px solid #f0f3f7;font-size:12px}
+.pill{padding:5px 9px;border-radius:20px;background:#dcfce7;color:#15803d;font-size:10px;font-weight:800;white-space:nowrap}
+.pill.late,.pill.half{background:#fee2e2;color:#b91c1c}
+.pill.partial,.pill.progress{background:#fef3c7;color:#92400e}
+.empty{text-align:center;padding:25px;color:#94a3b8}
+.notice{display:none;margin:15px 0;padding:12px 15px;border-radius:9px;font-size:13px}
+.notice.show{display:block}.notice.error{background:#fee2e2;color:#991b1b}.notice.success{background:#dcfce7;color:#166534}
+.footer{text-align:center;color:#94a3b8;font-size:11px;margin:25px}
+@media(max-width:850px){.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+@media(max-width:520px){main{padding:17px}.value{font-size:23px}.card,.panel{padding:15px}}
+</style>
 </head>
-<body class="min-h-screen bg-slate-100">
-  <div id="topbar"></div>
-  <main class="ml-64 p-8 min-h-screen bg-slate-100">
-    <h1 class="text-2xl font-bold mb-6 text-slate-800">Attendance Management</h1>
+<body>
+<main>
+  <header class="header">
+    <div>
+      <div class="eyebrow">ERP / HUMAN RESOURCES</div>
+      <h1>Attendance Management</h1>
+      <div class="sub">Track daily attendance, punctuality and employee working hours.</div>
+      <div class="actions">
+        <button class="in" id="clockIn">↗ Clock In</button>
+        <button class="out" id="clockOut">↙ Clock Out</button>
+        <button class="refresh" id="refresh">↻ Refresh</button>
+      </div>
+    </div>
+    <div class="clock">
+      <strong id="liveClock">--:--:--</strong>
+      Asia/Dhaka · Bangladesh
+    </div>
+  </header>
 
-    <div class="bg-white p-6 rounded-lg shadow mb-6 flex gap-4 items-center">
-      <button id="btnClockIn" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-medium">Clock In</button>
-      <button id="btnClockOut" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 font-medium">Clock Out</button>
-      <p id="msg" class="text-sm font-medium ml-4"></p>
+  <div class="notice" id="notice"></div>
+
+  <section class="stats">
+    <div class="card"><div class="stat-label">Attendance Days This Month</div><div class="value blue" id="days">—</div><div class="note">Recorded working days</div></div>
+    <div class="card"><div class="stat-label">Total Working Hours</div><div class="value green" id="hours">—</div><div class="note">Completed working hours</div></div>
+    <div class="card"><div class="stat-label">Late Arrivals</div><div class="value red" id="late">—</div><div class="note">After 9:15 AM</div></div>
+    <div class="card"><div class="stat-label">Full Days</div><div class="value" id="full">—</div><div class="note">8 hours or more</div></div>
+  </section>
+
+  <section class="grid">
+    <div class="panel">
+      <div class="panel-head"><div><h2>My Attendance History</h2><div class="sub">Your latest 30 attendance records</div></div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Status</th></tr></thead>
+          <tbody id="myRows"><tr><td colspan="5" class="empty">Loading attendance...</td></tr></tbody>
+        </table>
+      </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-      <table class="w-full text-sm">
-        <thead class="bg-slate-200 text-slate-700">
-          <tr>
-            <th class="text-left p-3">Date</th>
-            <th class="text-left p-3">Clock In</th>
-            <th class="text-left p-3">Clock Out</th>
-          </tr>
-        </thead>
-        <tbody id="logTable"></tbody>
+    <div class="panel">
+      <div class="panel-head"><div><h2>Attendance Rules</h2><div class="sub">Company attendance policy</div></div></div>
+      <div style="padding:8px 0;border-bottom:1px solid #edf1f6"><strong>09:00 AM</strong><div class="sub">Official office start time</div></div>
+      <div style="padding:14px 0;border-bottom:1px solid #edf1f6"><strong>09:15 AM</strong><div class="sub">Grace period ends · Late after this time</div></div>
+      <div style="padding:14px 0;border-bottom:1px solid #edf1f6"><strong>Below 4 hours</strong><div class="sub">Half Day</div></div>
+      <div style="padding:14px 0"><strong>8 hours or more</strong><div class="sub">Full Day</div></div>
+      <div class="sub" style="margin-top:8px">Incomplete clock-out records remain In Progress and are not counted as completed hours in the monthly total.</div>
+    </div>
+  </section>
+
+  <section class="panel" id="teamPanel" hidden style="margin-top:18px">
+    <div class="panel-head"><div><h2>Employee Attendance Overview</h2><div class="sub">Admin · Current month team summary</div></div></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Employee</th><th>Days</th><th>Late</th><th>Half Days</th><th>Full Days</th><th>Working Hours</th></tr></thead>
+        <tbody id="teamRows"><tr><td colspan="6" class="empty">Loading team report...</td></tr></tbody>
       </table>
     </div>
-  </main>
-  <script type="module" src="/src/js/attendance.js"></script>
+  </section>
+  <div class="footer">ERP Attendance Control · Asia/Dhaka</div>
+</main>
+<script type="module" src="/src/js/attendance.js"></script>
 </body>
 </html>
