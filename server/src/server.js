@@ -14,6 +14,7 @@ import authRoutes from './routes/auth.routes.js';
 import customerRoutes from './routes/customer.routes.js';
 import salesRoutes from './routes/sales.routes.js';
 
+import inventoryRoutes from './routes/inventory.routes.js';
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -24,12 +25,15 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/accounting', salesRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/inventory', inventoryRoutes);
 app.use('/api/leave', leaveRoutes);
 
 const PORT = process.env.PORT || 5000;
 
 // Adds any columns an older database is missing, so a forgotten re-import can't break login.
 async function ensureSchema() {
+// â”€â”€â”€ Seed default users (idempotent) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+async function ensurePresenceColumns() {
   const needed = [
     ['last_seen_at', 'DATETIME NULL'],
     ['is_logged_in', 'TINYINT(1) NOT NULL DEFAULT 0'],
@@ -41,19 +45,40 @@ async function ensureSchema() {
         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = ?`, [col]);
     if (!rows[0].n) {
       await pool.query(`ALTER TABLE users ADD COLUMN ${col} ${def}`);
-      console.log(`✓ Added users.${col}`);
+      console.log(`âœ“ Added users.${col}`);
     }
   }
   // Passwords now live in Firebase, so MySQL must allow an empty password column.
   await pool.query('ALTER TABLE users MODIFY password VARCHAR(255) NULL');
 }
 
+async function seedUsers() {
+  const defaults = [
+    ['admin',      'admin123',      'admin'],
+    ['sales',      'sales123',      'sales'],
+    ['accounting', 'accounting123', 'accounting'],
+    ['marketing',  'marketing123',  'marketing']
+  ];
+  for (const [username, password, role] of defaults) {
+    const [rows] = await pool.query('SELECT id FROM users WHERE username = ?', [username]);
+    if (rows.length === 0) {
+      const hash = await bcrypt.hash(password, 10);
+      await pool.query(
+        'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+        [username, hash, role]
+      );
+      console.log(`âœ“ Seeded user: ${username} / ${password} (${role})`);
+    }
+  }
+}
+
 app.listen(PORT, async () => {
-  console.log(`🚀 Server on http://localhost:${PORT}`);
+  console.log(`ðŸš€ Server on http://localhost:${PORT}`);
   try {
     await ensureSchema();
     console.log('✓ Database ready');
   } catch (err) {
     console.warn('⚠ Database not ready — is MySQL started and db.sql imported?', err.message);
+    console.warn('âš  Could not seed users â€” did you import db.sql?', err.message);
   }
 });
