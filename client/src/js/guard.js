@@ -1,23 +1,44 @@
+import { signOut } from 'firebase/auth';
+import { auth } from './firebase.js';
 import { homeFor, menuFor } from './roles.js';
-import { heartbeat, logoutServer } from './api.js';
+import { authReady, me, heartbeat, logoutServer } from './api.js';
+import { getSession, saveSession, clearSession } from './session.js';
 
+// Call at the top of every protected page:  const user = guard(['admin']);  if (user) { ... }
+// Instant check from the remembered login, then a background check with the server.
 export function guard(requiredRoles) {
-  const token = localStorage.getItem('token');
-  const raw = localStorage.getItem('user');
-  if (!token || !raw) { window.location.href = '/'; return null; }
-
-  let user;
-  try { user = JSON.parse(raw); } catch { window.location.href = '/'; return null; }
+  const user = getSession();
+  if (!user) { window.location.href = '/'; return null; }
 
   if (requiredRoles && !requiredRoles.includes(user.role)) {
     window.location.href = homeFor(user.role);
     return null;
   }
+  verifyWithServer(user);
   return user;
 }
 
+async function verifyWithServer(cached) {
+  const firebaseUser = await authReady;
+  if (!firebaseUser) { clearSession(); window.location.href = '/'; return; }
+  try {
+    const fresh = await me();
+    if (fresh.role !== cached.role) {           // role changed in the database
+      saveSession(fresh);
+      window.location.href = homeFor(fresh.role);
+    }
+  } catch (err) {
+    if (err.code === 'NO_PROFILE') {            // Firebase account without a role row
+      clearSession();
+      await signOut(auth).catch(() => {});
+      window.location.href = '/';
+    }
+    // other errors (server restarting, offline): stay on the page
+  }
+}
+
 export function renderTopbar(user) {
-  // Find the div. We will keep the ID 'topbar' so you don't have to change your HTML IDs.
+  // Find the div. We keep the ID 'topbar' so the HTML pages don't change.
   const sidebar = document.getElementById('topbar');
   if (!sidebar) return;
 
@@ -43,8 +64,8 @@ export function renderTopbar(user) {
 
   document.getElementById('logoutBtn').addEventListener('click', async () => {
     try { await logoutServer(); } catch { /* still log out locally */ }
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearSession();
+    await signOut(auth).catch(() => {});
     window.location.href = '/';
   });
 

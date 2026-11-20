@@ -5,7 +5,8 @@ USE erp_db;
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(50) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
+  password VARCHAR(255) NULL,                      -- unused: passwords now live in Firebase
+  firebase_uid VARCHAR(128) NULL UNIQUE,           -- links this row to the Firebase account
   role ENUM('admin','sales','marketing','accounting') NOT NULL DEFAULT 'sales',
   last_seen_at DATETIME NULL,                      -- last heartbeat from the browser
   is_logged_in TINYINT(1) NOT NULL DEFAULT 0,      -- 1 between login and logout
@@ -70,3 +71,12 @@ SET @c2 := (SELECT COUNT(*) FROM information_schema.COLUMNS
             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'is_logged_in');
 SET @q2 := IF(@c2 = 0, 'ALTER TABLE users ADD COLUMN is_logged_in TINYINT(1) NOT NULL DEFAULT 0', 'SELECT 1');
 PREPARE s2 FROM @q2; EXECUTE s2; DEALLOCATE PREPARE s2;
+
+-- Firebase login: link column + passwords are no longer stored in MySQL.
+-- Upgrades databases created before Firebase was added. Safe to run again.
+SET @c3 := (SELECT COUNT(*) FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'firebase_uid');
+SET @q3 := IF(@c3 = 0, 'ALTER TABLE users ADD COLUMN firebase_uid VARCHAR(128) NULL UNIQUE', 'SELECT 1');
+PREPARE s3 FROM @q3; EXECUTE s3; DEALLOCATE PREPARE s3;
+
+ALTER TABLE users MODIFY password VARCHAR(255) NULL;

@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { login, me, signup, heartbeat, logout, activeUsers } from '../controllers/auth.controller.js';
-import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
+import { syncUser, me, heartbeat, logout, activeUsers } from '../controllers/auth.controller.js';
+import { verifyFirebaseToken, verifyToken, requireRole } from '../middleware/auth.middleware.js';
 
 const router = Router();
-router.post('/login', login);
-router.post('/signup', signup);
+
+// Signup/login themselves happen in the browser with Firebase.
+router.post('/sync-user', verifyFirebaseToken, syncUser);   // new account -> create the MySQL row
 router.get('/me', verifyToken, me);
 
 // online/offline tracking

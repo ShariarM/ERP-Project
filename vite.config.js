@@ -6,6 +6,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   root: 'client',
+  envDir: __dirname,   // read VITE_* values from the .env in the project root
   server: {
     port: 5173,
     proxy: { '/api': 'http://localhost:5000' }

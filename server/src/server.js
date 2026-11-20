@@ -3,7 +3,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import bcrypt from 'bcryptjs';
 import attendanceRoutes from './routes/attendance.routes.js';
 import leaveRoutes from './routes/leave.routes.js';
 
@@ -29,11 +28,12 @@ app.use('/api/leave', leaveRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-// ─── Seed default users (idempotent) ─────────────────────────────
-async function ensurePresenceColumns() {
+// Adds any columns an older database is missing, so a forgotten re-import can't break login.
+async function ensureSchema() {
   const needed = [
     ['last_seen_at', 'DATETIME NULL'],
-    ['is_logged_in', 'TINYINT(1) NOT NULL DEFAULT 0']
+    ['is_logged_in', 'TINYINT(1) NOT NULL DEFAULT 0'],
+    ['firebase_uid', 'VARCHAR(128) NULL UNIQUE']
   ];
   for (const [col, def] of needed) {
     const [rows] = await pool.query(
@@ -44,34 +44,16 @@ async function ensurePresenceColumns() {
       console.log(`✓ Added users.${col}`);
     }
   }
-}
-
-async function seedUsers() {
-  const defaults = [
-    ['admin',      'admin123',      'admin'],
-    ['sales',      'sales123',      'sales'],
-    ['accounting', 'accounting123', 'accounting'],
-    ['marketing',  'marketing123',  'marketing']
-  ];
-  for (const [username, password, role] of defaults) {
-    const [rows] = await pool.query('SELECT id FROM users WHERE username = ?', [username]);
-    if (rows.length === 0) {
-      const hash = await bcrypt.hash(password, 10);
-      await pool.query(
-        'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
-        [username, hash, role]
-      );
-      console.log(`✓ Seeded user: ${username} / ${password} (${role})`);
-    }
-  }
+  // Passwords now live in Firebase, so MySQL must allow an empty password column.
+  await pool.query('ALTER TABLE users MODIFY password VARCHAR(255) NULL');
 }
 
 app.listen(PORT, async () => {
   console.log(`🚀 Server on http://localhost:${PORT}`);
   try {
-    await ensurePresenceColumns();
-    await seedUsers();
+    await ensureSchema();
+    console.log('✓ Database ready');
   } catch (err) {
-    console.warn('⚠ Could not seed users — did you import db.sql?', err.message);
+    console.warn('⚠ Database not ready — is MySQL started and db.sql imported?', err.message);
   }
 });
