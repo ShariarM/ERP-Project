@@ -1,9 +1,7 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import pool from '../config/db.js';
 
-const SECRET = process.env.JWT_SECRET || 'dev_secret';
-const SIGNUP_ROLES = ['sales', 'marketing', 'accounting']; // admin is NOT allowed here
+// Departments a person may pick on the signup page. "admin" is NOT here on purpose.
+const SIGNUP_ROLES = ['sales', 'marketing', 'accounting'];
 
 // A user counts as "online" if logged in AND the browser pinged within this window.
 // The browser pings every 30 s, so 90 s tolerates a missed ping or two.
@@ -18,90 +16,60 @@ async function markOnline(userId) {
   }
 }
 
-export async function login(req, res) {
+// Called by the browser right after Firebase signup succeeded: creates the MySQL row that holds the role.
+export async function syncUser(req, res) {
   try {
-    const { username, password } = req.body;
-    if (!username || !password)
-      return res.status(400).json({ error: 'Username and password required' });
+    const { uid, email } = req.firebaseUser;
+    if (!email) return res.status(400).json({ error: 'Your Firebase account has no email address' });
 
-    const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
-    if (rows.length === 0)
-      return res.status(401).json({ error: 'Invalid credentials' });
+    // Already synced (e.g. double click)? Just return it.
+    const [existing] = await pool.query('SELECT id, username, role FROM users WHERE firebase_uid = ?', [uid]);
+    if (existing.length) return res.json(existing[0]);
 
-    const user = rows[0];
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
+    // The FIRST person who signs up with ADMIN_EMAIL (from .env) becomes the admin.
+    // Nobody else can ever get "admin" - the signup page cannot ask for it.
+    let role = null;
+    const adminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+    if (adminEmail && email.toLowerCase() === adminEmail) {
+      const [[{ n }]] = await pool.query(
+        "SELECT COUNT(*) AS n FROM users WHERE role = 'admin' AND firebase_uid IS NOT NULL");
+      if (Number(n) === 0) role = 'admin';
+    }
+    if (!role) {
+      role = String(req.body?.role ?? '');
+      if (!SIGNUP_ROLES.includes(role)) {
+        return res.status(400).json({ error: 'Choose a valid department' });
+      }
+    }
 
-    const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role },
-      SECRET,
-      { expiresIn: '8h' }
-    );
-
-    await markOnline(user.id);
-    res.json({
-      token,
-      user: { id: user.id, username: user.username, role: user.role }
-    });
+    // Username = part before the @ (john@x.com -> john). If taken: john-2, john-3, ...
+    const base = email.split('@')[0].replace(/[^A-Za-z0-9_.-]/g, '').slice(0, 40) || 'user';
+    for (let i = 1; i <= 50; i++) {
+      const username = i === 1 ? base : `${base}-${i}`;
+      try {
+        const [result] = await pool.query(
+          'INSERT INTO users (firebase_uid, username, password, role) VALUES (?, ?, NULL, ?)',
+          [uid, username, role]);
+        await markOnline(result.insertId);
+        return res.status(201).json({ id: result.insertId, username, role });
+      } catch (err) {
+        if (err.code !== 'ER_DUP_ENTRY') throw err;
+        // Same Firebase account inserted by a parallel request? Return that row.
+        const [again] = await pool.query('SELECT id, username, role FROM users WHERE firebase_uid = ?', [uid]);
+        if (again.length) return res.json(again[0]);
+        // otherwise the username was taken: try the next one
+      }
+    }
+    res.status(409).json({ error: 'Could not create a unique username' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('syncUser:', err);
+    res.status(500).json({ error: 'Server error during user sync' });
   }
 }
-// ADD THIS BELOW THE login FUNCTION
-export async function signup(req, res) {
-  try {
-    const { password } = req.body;
-    const username = String(req.body.username || '').trim();
-    const role = String(req.body.role || '');
 
-    if (!username || !password || !role) {
-      return res.status(400).json({ error: 'Username, password, and role are required' });
-    }
-
-    // SECURITY: public signup must never create an admin. Admins are created only by the seed/DB.
-    if (!SIGNUP_ROLES.includes(role)) {
-      return res.status(400).json({ error: 'Choose a valid department' });
-    }
-    if (!/^[A-Za-z0-9_.-]{3,30}$/.test(username)) {
-      return res.status(400).json({ error: 'Username must be 3-30 letters, numbers, . _ -' });
-    }
-    if (String(password).length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
-    }
-
-    // Check if user already exists
-    const [existing] = await pool.query('SELECT id FROM users WHERE username = ?', [username]);
-    if (existing.length > 0) {
-      return res.status(400).json({ error: 'Username already taken' });
-    }
-
-    // Hash password and insert
-    const hash = await bcrypt.hash(password, 10);
-    const [result] = await pool.query(
-      'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
-      [username, hash, role]
-    );
-
-    // Auto-login after signup (generate token)
-    const token = jwt.sign(
-      { id: result.insertId, username, role },
-      SECRET,
-      { expiresIn: '8h' }
-    );
-
-    await markOnline(result.insertId);
-    res.status(201).json({
-      token,
-      user: { id: result.insertId, username, role }
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error during signup' });
-  }
-}
+// Current user (id, username, role) - read from MySQL by verifyToken
 export async function me(req, res) {
-  res.json({ user: req.user });
+  res.json(req.user);
 }
 
 // Browser calls this every 30 s while any protected page is open

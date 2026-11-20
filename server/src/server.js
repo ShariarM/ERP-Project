@@ -3,7 +3,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import bcrypt from 'bcryptjs';
 import attendanceRoutes from './routes/attendance.routes.js';
 import leaveRoutes from './routes/leave.routes.js';
 
@@ -31,11 +30,14 @@ app.use('/api/leave', leaveRoutes);
 
 const PORT = process.env.PORT || 5000;
 
+// Adds any columns an older database is missing, so a forgotten re-import can't break login.
+async function ensureSchema() {
 // â”€â”€â”€ Seed default users (idempotent) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function ensurePresenceColumns() {
   const needed = [
     ['last_seen_at', 'DATETIME NULL'],
-    ['is_logged_in', 'TINYINT(1) NOT NULL DEFAULT 0']
+    ['is_logged_in', 'TINYINT(1) NOT NULL DEFAULT 0'],
+    ['firebase_uid', 'VARCHAR(128) NULL UNIQUE']
   ];
   for (const [col, def] of needed) {
     const [rows] = await pool.query(
@@ -46,6 +48,8 @@ async function ensurePresenceColumns() {
       console.log(`âœ“ Added users.${col}`);
     }
   }
+  // Passwords now live in Firebase, so MySQL must allow an empty password column.
+  await pool.query('ALTER TABLE users MODIFY password VARCHAR(255) NULL');
 }
 
 async function seedUsers() {
@@ -71,9 +75,10 @@ async function seedUsers() {
 app.listen(PORT, async () => {
   console.log(`ðŸš€ Server on http://localhost:${PORT}`);
   try {
-    await ensurePresenceColumns();
-    await seedUsers();
+    await ensureSchema();
+    console.log('✓ Database ready');
   } catch (err) {
+    console.warn('⚠ Database not ready — is MySQL started and db.sql imported?', err.message);
     console.warn('âš  Could not seed users â€” did you import db.sql?', err.message);
   }
 });
