@@ -4,61 +4,81 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Accounting</title>
+  <title>Accounting &amp; Sales | TaskMatrix</title>
   <link rel="stylesheet" href="/src/css/main.css" />
 </head>
 
-<body class="min-h-screen bg-slate-100">
+<body class="app-body">
   <div id="topbar"></div>
-  <!-- ml-64 keeps the content to the right of the fixed sidebar -->
-  <main class="ml-64 p-8 min-h-screen bg-slate-100">
-    <div class="p-6 max-w-5xl mx-auto">
-      <h1 class="text-2xl font-bold mb-4 text-slate-800">Accounting / Sales</h1>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white p-4 rounded-lg shadow">
-          <div class="text-sm text-slate-500">Total Sales</div>
-          <div id="total" class="text-2xl font-bold">$0</div>
+  <main class="app-main">
+    <div class="page-container">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">Finance</div>
+          <h1 class="page-title">Accounting &amp; sales</h1>
+          <p class="page-description">Record sales and review transaction totals.</p>
         </div>
-        <div class="bg-white p-4 rounded-lg shadow">
-          <div class="text-sm text-slate-500">Transactions</div>
-          <div id="count" class="text-2xl font-bold">0</div>
-        </div>
-        <div class="bg-white p-4 rounded-lg shadow">
-          <div class="text-sm text-slate-500">Average</div>
-          <div id="avg" class="text-2xl font-bold">$0</div>
-        </div>
-      </div>
+      </header>
 
-      <div class="bg-white p-4 rounded-lg shadow mb-6">
-        <h2 class="font-semibold mb-3 text-slate-700">Record Sale</h2>
-        <form id="saleForm" class="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <select id="customer_id" class="px-3 py-2 border rounded">
-            <option value="">— No customer —</option>
-          </select>
-          <input id="amount" type="number" step="0.01" placeholder="Amount *" required
-            class="px-3 py-2 border rounded" />
-          <input id="description" placeholder="Description" class="px-3 py-2 border rounded" />
-          <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save</button>
-        </form>
-        <p id="err" class="text-red-600 mt-2"></p>
-      </div>
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" aria-label="Sales statistics">
+        <article class="surface-card metric-card">
+          <div class="metric-label">Total sales</div>
+          <div id="total" class="metric-value">$0</div>
+          <div class="metric-note">Recorded sales to date</div>
+        </article>
+        <article class="surface-card metric-card">
+          <div class="metric-label">Transactions</div>
+          <div id="count" class="metric-value">0</div>
+          <div class="metric-note">Recorded sales</div>
+        </article>
+        <article class="surface-card metric-card">
+          <div class="metric-label">Average sale</div>
+          <div id="avg" class="metric-value">$0</div>
+          <div class="metric-note">Average transaction value</div>
+        </article>
+      </section>
 
-      <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="w-full text-sm">
-          <thead class="bg-slate-200">
-            <tr>
-              <th class="text-left p-2">ID</th>
-              <th class="text-left p-2">Date</th>
-              <th class="text-left p-2">Customer</th>
-              <th class="text-left p-2">Description</th>
-              <th class="text-right p-2">Amount</th>
-              <th class="text-left p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
+      <section class="surface-card mb-6">
+        <div class="panel-heading">
+          <div>
+            <h2 class="panel-title">Record a sale</h2>
+            <div class="panel-subtitle">Create a new sales transaction</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <form id="saleForm" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <label class="sr-only" for="customer_id">Customer</label>
+            <select id="customer_id">
+              <option value="">— No customer —</option>
+            </select>
+            <label class="sr-only" for="amount">Amount</label>
+            <input id="amount" type="number" step="0.01" placeholder="Amount *" required />
+            <label class="sr-only" for="description">Description</label>
+            <input id="description" placeholder="Description" />
+            <button type="submit" class="primary-button px-4 py-2">Save sale</button>
+          </form>
+          <p id="err" class="text-red-600 mt-2 text-sm" role="status"></p>
+        </div>
+      </section>
+
+      <section class="surface-card overflow-hidden">
+        <div class="panel-heading">
+          <div>
+            <h2 class="panel-title">Sales transactions</h2>
+            <div class="panel-subtitle">Existing sales records</div>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th><th>Date</th><th>Customer</th><th>Description</th><th class="text-right">Amount</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </section>
     </div>
   </main>
   <script type="module" src="/src/js/accounting.js"></script>

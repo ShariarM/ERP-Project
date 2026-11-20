@@ -4,28 +4,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Marketing Dashboard</title>
+  <title>Marketing | TaskMatrix</title>
   <link rel="stylesheet" href="/src/css/main.css" />
 </head>
 
-<body class="min-h-screen bg-slate-100">
+<body class="app-body">
   <div id="topbar"></div>
-  <!-- ml-64 keeps the content to the right of the fixed sidebar -->
-  <main class="ml-64 p-8 min-h-screen bg-slate-100">
-    <div class="p-6 max-w-5xl mx-auto">
-      <h1 class="text-2xl font-bold mb-4 text-slate-800">Marketing Dashboard</h1>
+  <main class="app-main">
+    <div class="page-container">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">Business management</div>
+          <h1 class="page-title">Marketing</h1>
+          <p class="page-description">Review your available customer outreach base.</p>
+        </div>
+      </header>
 
-      <div class="bg-white p-6 rounded-lg shadow mb-6">
-        <h2 class="font-semibold text-lg text-slate-700 mb-2">Campaign Management</h2>
-        <p class="text-slate-500 mb-4">Use this page to manage marketing campaigns and view customer outreach lists.</p>
-        <button class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Create New Campaign</button>
-      </div>
+      <section class="surface-card mb-5">
+        <div class="panel-body">
+          <div class="page-eyebrow">Campaign management</div>
+          <h2 class="panel-title text-lg">Plan your next campaign</h2>
+          <p class="page-description mb-5">Use this page to manage marketing campaigns and view customer outreach lists.</p>
+          <button type="button" class="primary-button px-4 py-2">Create new campaign</button>
+        </div>
+      </section>
 
-      <div class="bg-white p-6 rounded-lg shadow">
-        <h2 class="font-semibold text-lg text-slate-700 mb-2">Customer Base</h2>
-        <p class="text-4xl font-bold text-slate-800" id="customerCount">0</p>
-        <p class="text-sm text-slate-500">Total customers available for marketing outreach.</p>
-      </div>
+      <section class="surface-card metric-card">
+        <div class="metric-label">Customer base</div>
+        <div class="metric-value" id="customerCount">0</div>
+        <div class="metric-note">Total customers available for marketing outreach.</div>
+      </section>
     </div>
   </main>
   <script type="module" src="/src/js/marketing.js"></script>

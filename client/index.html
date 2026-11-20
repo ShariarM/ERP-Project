@@ -4,34 +4,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ERP Login</title>
+  <title>Sign in | TaskMatrix</title>
   <link rel="stylesheet" href="/src/css/main.css" />
 </head>
 
-<body class="min-h-screen flex items-center justify-center bg-slate-100">
-  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
-    <h1 class="text-2xl font-bold mb-6 text-center text-slate-800">ERP Login</h1>
-    <form id="loginForm" class="space-y-4">
-      <input id="username" type="text" placeholder="Username" required value="admin"
-        class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      <input id="password" type="password" placeholder="Password" required value="admin123"
-        class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-medium">
-        Sign In
-      </button>
-      <!-- Add this right below the submit button inside the form -->
-      <p class="text-center text-sm text-slate-600 mt-4">
-        Don't have an account? <a href="/pages/signup/signup.html" class="text-blue-600 hover:underline">Sign up</a>
-      </p>
-      <p id="error" class="text-red-600 text-sm hidden text-center"></p>
-    </form>
-    <div class="mt-6 text-xs text-slate-500 text-center space-y-1">
-      <p><b>admin / admin123</b> — full access</p>
-      <p><b>sales / sales123</b> — customers</p>
-      <p><b>accounting / accounting123</b> — accounting</p>
-      <p><b>marketing / marketing123</b> — marketing</p>
-    </div>
-  </div>
+<body class="auth-page">
+  <main class="auth-shell">
+    <section class="auth-brand-panel" aria-label="TaskMatrix">
+      <a class="sidebar-brand" href="/" aria-label="TaskMatrix home">
+        <span class="brand-mark">T</span>
+        <span><span class="brand-name">TaskMatrix</span><span class="brand-caption">Business suite</span></span>
+      </a>
+      <div class="auth-brand-copy">
+        <h2>Work smarter.<br />Grow together.</h2>
+        <p>A clear view of your operations, people, and business — all in one place.</p>
+      </div>
+      <div class="auth-brand-foot">A focused workspace for your business.</div>
+    </section>
+    <section class="auth-form-panel">
+      <div class="auth-form">
+        <h1>Welcome back</h1>
+        <p class="auth-intro">Sign in to continue to your TaskMatrix workspace.</p>
+        <form id="loginForm">
+          <div class="auth-field">
+            <label for="username">Username</label>
+            <input id="username" type="text" placeholder="Enter your username" required value="admin" autocomplete="username" />
+          </div>
+          <div class="auth-field">
+            <label for="password">Password</label>
+            <input id="password" type="password" placeholder="Enter your password" required value="admin123" autocomplete="current-password" />
+          </div>
+          <button type="submit">Sign in</button>
+          <p id="error" class="auth-error hidden"></p>
+        </form>
+        <p class="auth-switch">Don't have an account? <a href="/pages/signup/signup.html">Create an account</a></p>
+        <div class="demo-accounts">
+          <strong>Demo accounts</strong><br />
+          admin / admin123 — full access<br />
+          sales / sales123 — customers<br />
+          accounting / accounting123 — accounting<br />
+          marketing / marketing123 — marketing
+        </div>
+      </div>
+    </section>
+  </main>
   <script type="module" src="/src/js/login.js"></script>
 </body>
 

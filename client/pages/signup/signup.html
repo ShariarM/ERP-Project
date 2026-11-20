@@ -1,39 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ERP Signup</title>
+  <title>Create account | TaskMatrix</title>
   <link rel="stylesheet" href="/src/css/main.css" />
 </head>
-<body class="min-h-screen flex items-center justify-center bg-slate-100">
-  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
-    <h1 class="text-2xl font-bold mb-6 text-center text-slate-800">Create an Account</h1>
-    <form id="signupForm" class="space-y-4">
-      <input id="username" type="text" placeholder="Username" required
-        class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      
-      <input id="password" type="password" placeholder="Password" required
-        class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      
-      <select id="role" required
-        class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-        <option value="" disabled selected>Select your department...</option>
-        <option value="sales">Sales</option>
-        <option value="accounting">Accounting</option>
-        <option value="marketing">Marketing</option>
-      </select>
 
-      <button type="submit"
-        class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-medium">
-        Sign Up
-      </button>
-      <p id="error" class="text-red-600 text-sm hidden text-center"></p>
-    </form>
-    <p class="text-center text-sm text-slate-600 mt-4">
-      Already have an account? <a href="/" class="text-blue-600 hover:underline">Log in</a>
-    </p>
-  </div>
+<body class="auth-page">
+  <main class="auth-shell">
+    <section class="auth-brand-panel" aria-label="TaskMatrix">
+      <a class="sidebar-brand" href="/" aria-label="TaskMatrix home">
+        <span class="brand-mark">T</span>
+        <span><span class="brand-name">TaskMatrix</span><span class="brand-caption">Business suite</span></span>
+      </a>
+      <div class="auth-brand-copy">
+        <h2>Make room for<br />great work.</h2>
+        <p>Bring your day-to-day business management into one calm, connected workspace.</p>
+      </div>
+      <div class="auth-brand-foot">A focused workspace for your business.</div>
+    </section>
+    <section class="auth-form-panel">
+      <div class="auth-form">
+        <h1>Create your account</h1>
+        <p class="auth-intro">Set up your TaskMatrix workspace access.</p>
+        <form id="signupForm">
+          <div class="auth-field">
+            <label for="username">Username</label>
+            <input id="username" type="text" placeholder="Choose a username" required autocomplete="username" />
+          </div>
+          <div class="auth-field">
+            <label for="password">Password</label>
+            <input id="password" type="password" placeholder="Create a password" required autocomplete="new-password" />
+          </div>
+          <div class="auth-field">
+            <label for="role">Department</label>
+            <select id="role" required>
+              <option value="" disabled selected>Select your department...</option>
+              <option value="sales">Sales</option>
+              <option value="accounting">Accounting</option>
+              <option value="marketing">Marketing</option>
+            </select>
+          </div>
+          <button type="submit">Create account</button>
+          <p id="error" class="auth-error hidden"></p>
+        </form>
+        <p class="auth-switch">Already have an account? <a href="/">Sign in</a></p>
+      </div>
+    </section>
+  </main>
   <script type="module" src="/src/js/signup.js"></script>
 </body>
+
 </html>

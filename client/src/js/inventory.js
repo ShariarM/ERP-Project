@@ -1,3 +1,5 @@
+import { renderTopbar } from './guard.js';
+
 const API = '/api/inventory';
 const token = localStorage.getItem('token');
 let products = [];
@@ -17,13 +19,16 @@ const user = (() => {
 
 const role = String(user.role || '').toLowerCase();
 const canManage = ['admin', 'accounting'].includes(role);
+const canAccess = ['admin', 'accounting', 'sales'].includes(role);
 
 if (!token) {
   window.location.href = '/';
 }
 
-if (!['admin', 'accounting', 'sales'].includes(role)) {
+if (!canAccess) {
   document.body.innerHTML = '<main style="font-family:Arial;padding:50px"><h2>Access denied</h2><p>Your role cannot access inventory.</p><a href="/">Return to login</a></main>';
+} else {
+  renderTopbar(user);
 }
 
 if (!canManage) {

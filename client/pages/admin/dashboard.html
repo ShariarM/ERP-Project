@@ -4,54 +4,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard</title>
+  <title>Dashboard | TaskMatrix</title>
   <link rel="stylesheet" href="/src/css/main.css" />
 </head>
 
-<body class="min-h-screen bg-slate-100">
+<body class="app-body">
   <div id="topbar"></div>
-  <!-- ml-64 keeps the content to the right of the fixed sidebar -->
-  <main class="ml-64 p-8 min-h-screen bg-slate-100">
-    <div class="p-6 max-w-6xl mx-auto">
-      <h1 class="text-2xl font-bold mb-6 text-slate-800">Admin Dashboard</h1>
-      <p id="err" class="text-red-600 mb-4"></p>
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-white p-4 rounded-lg shadow">
-          <div class="text-sm text-slate-500">Total Sales</div>
-          <div id="totalSales" class="text-2xl font-bold">$0</div>
+  <main class="app-main">
+    <div class="page-container">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">Business overview</div>
+          <h1 class="page-title">Welcome back, <span id="welcomeName">Admin</span></h1>
+          <p class="page-description">Here’s a snapshot of sales, customers, and team activity.</p>
         </div>
-        <div class="bg-white p-4 rounded-lg shadow">
-          <div class="text-sm text-slate-500">Sales Count</div>
-          <div id="salesCount" class="text-2xl font-bold">0</div>
-        </div>
-        <div class="bg-white p-4 rounded-lg shadow">
-          <div class="text-sm text-slate-500">Avg Sale</div>
-          <div id="avgSale" class="text-2xl font-bold">$0</div>
-        </div>
-        <div class="bg-white p-4 rounded-lg shadow">
-          <div class="text-sm text-slate-500">Customers</div>
-          <div id="customerCount" class="text-2xl font-bold">0</div>
-        </div>
-      </div>
+      </header>
 
-      <div class="bg-white rounded-lg shadow mt-6 overflow-hidden">
-        <div class="flex items-center justify-between p-4 border-b">
-          <h2 class="font-semibold text-slate-700">Team Activity</h2>
-          <span id="onlineSummary" class="text-sm text-slate-500">Loading...</span>
+      <p id="err" class="text-red-600 mb-4"></p>
+
+      <section class="dashboard-grid" aria-label="Business statistics">
+        <article class="surface-card metric-card">
+          <div class="metric-label">Total sales</div>
+          <div id="totalSales" class="metric-value">$0</div>
+          <div class="metric-note">Recorded sales to date</div>
+        </article>
+        <article class="surface-card metric-card">
+          <div class="metric-label">Transactions</div>
+          <div id="salesCount" class="metric-value">0</div>
+          <div class="metric-note">Sales recorded</div>
+        </article>
+        <article class="surface-card metric-card">
+          <div class="metric-label">Average sale</div>
+          <div id="avgSale" class="metric-value">$0</div>
+          <div class="metric-note">Average transaction value</div>
+        </article>
+        <article class="surface-card metric-card">
+          <div class="metric-label">Customers</div>
+          <div id="customerCount" class="metric-value">0</div>
+          <div class="metric-note">Customers in your database</div>
+        </article>
+      </section>
+
+      <section class="dashboard-panels">
+        <div class="dashboard-stack">
+          <article class="surface-card">
+            <div class="panel-heading">
+              <div>
+                <h2 class="panel-title">Sales trend</h2>
+                <div class="panel-subtitle">Sales by date from recorded transactions</div>
+              </div>
+            </div>
+            <div id="salesChart" class="dashboard-chart">
+              <div class="empty">Loading sales data...</div>
+            </div>
+          </article>
+
+          <article class="surface-card dashboard-table">
+            <div class="panel-heading">
+              <div>
+                <h2 class="panel-title">Recent transactions</h2>
+                <div class="panel-subtitle">Latest recorded sales</div>
+              </div>
+              <a class="text-indigo-600 text-xs font-semibold no-underline hover:underline" href="/pages/accounting/index.html">View accounting</a>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr><th>Transaction</th><th>Customer</th><th>Date</th><th>Amount</th></tr>
+                </thead>
+                <tbody id="recentSales"><tr><td class="activity-empty" colspan="4">Loading transactions...</td></tr></tbody>
+              </table>
+            </div>
+          </article>
         </div>
-        <p id="activeErr" class="text-red-600 text-sm px-4 pt-3 empty:hidden"></p>
-        <table class="w-full text-sm">
-          <thead class="bg-slate-200 text-slate-700">
-            <tr>
-              <th class="text-left p-3">User</th>
-              <th class="text-left p-3">Department</th>
-              <th class="text-left p-3">Status</th>
-              <th class="text-left p-3">Last seen</th>
-            </tr>
-          </thead>
-          <tbody id="activeTable"></tbody>
-        </table>
-      </div>
+
+        <article class="surface-card dashboard-table">
+          <div class="panel-heading">
+            <div>
+              <h2 class="panel-title">Team activity</h2>
+              <div class="panel-subtitle">Current online presence</div>
+            </div>
+            <span id="onlineSummary" class="status-pill neutral">Loading...</span>
+          </div>
+          <p id="activeErr" class="error-text"></p>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>User</th><th>Department</th><th>Status</th><th>Last seen</th></tr>
+              </thead>
+              <tbody id="activeTable"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
     </div>
   </main>
   <script type="module" src="/src/js/admin.js"></script>

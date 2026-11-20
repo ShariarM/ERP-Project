@@ -4,48 +4,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Customers</title>
+  <title>Customers | TaskMatrix</title>
   <link rel="stylesheet" href="/src/css/main.css" />
 </head>
 
-<body class="min-h-screen bg-slate-100">
+<body class="app-body">
   <div id="topbar"></div>
-  <!-- ml-64 keeps the content to the right of the fixed sidebar -->
-  <main class="ml-64 p-8 min-h-screen bg-slate-100">
-    <div class="p-6 max-w-5xl mx-auto">
-      <h1 class="text-2xl font-bold mb-4 text-slate-800">Customers</h1>
+  <main class="app-main">
+    <div class="page-container">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">Business management</div>
+          <h1 class="page-title">Customers</h1>
+          <p class="page-description">Manage customer contact details and account records.</p>
+        </div>
+      </header>
 
-      <div class="bg-white p-4 rounded-lg shadow mb-6">
-        <h2 class="font-semibold mb-3 text-slate-700">Add / Edit Customer</h2>
-        <form id="customerForm" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <input type="hidden" id="id" />
-          <input id="name" placeholder="Name *" required class="px-3 py-2 border rounded" />
-          <input id="email" type="email" placeholder="Email" class="px-3 py-2 border rounded" />
-          <input id="phone" placeholder="Phone" class="px-3 py-2 border rounded" />
-          <input id="address" placeholder="Address" class="px-3 py-2 border rounded" />
-          <div class="md:col-span-2 flex gap-2">
-            <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save</button>
-            <button type="button" id="resetBtn" class="bg-slate-300 px-4 py-2 rounded hover:bg-slate-400">Reset</button>
+      <section class="surface-card mb-6">
+        <div class="panel-heading">
+          <div>
+            <h2 class="panel-title">Add or edit customer</h2>
+            <div class="panel-subtitle">Customer information and contact details</div>
           </div>
-        </form>
-        <p id="err" class="text-red-600 mt-2"></p>
-      </div>
+        </div>
+        <div class="panel-body">
+          <form id="customerForm" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input type="hidden" id="id" />
+            <label class="sr-only" for="name">Name</label>
+            <input id="name" placeholder="Name *" required />
+            <label class="sr-only" for="email">Email</label>
+            <input id="email" type="email" placeholder="Email address" />
+            <label class="sr-only" for="phone">Phone</label>
+            <input id="phone" placeholder="Phone number" />
+            <label class="sr-only" for="address">Address</label>
+            <input id="address" placeholder="Address" />
+            <div class="md:col-span-2 flex gap-2 pt-1">
+              <button type="submit" class="primary-button px-4 py-2">Save customer</button>
+              <button type="button" id="resetBtn" class="secondary-button px-4 py-2">Reset</button>
+            </div>
+          </form>
+          <p id="err" class="text-red-600 mt-2 text-sm" role="status"></p>
+        </div>
+      </section>
 
-      <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="w-full text-sm">
-          <thead class="bg-slate-200">
-            <tr>
-              <th class="text-left p-2">ID</th>
-              <th class="text-left p-2">Name</th>
-              <th class="text-left p-2">Email</th>
-              <th class="text-left p-2">Phone</th>
-              <th class="text-left p-2">Address</th>
-              <th class="text-left p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
+      <section class="surface-card overflow-hidden">
+        <div class="panel-heading">
+          <div>
+            <h2 class="panel-title">Customer directory</h2>
+            <div class="panel-subtitle">Customer records available in your workspace</div>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </section>
     </div>
   </main>
   <script type="module" src="/src/js/customers.js"></script>

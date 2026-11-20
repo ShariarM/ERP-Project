@@ -1,144 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory Management | ERP</title>
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0;background:#f4f7fb;color:#172033;font-family:Inter,Segoe UI,Arial,sans-serif}
-    .layout{max-width:1440px;margin:auto;padding:30px}
-    .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-    .eyebrow{color:#64748b;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
-    h1{font-size:29px;margin:7px 0;font-weight:800;letter-spacing:-.8px}
-    .sub{color:#718096;font-size:14px}
-    .actions{display:flex;gap:10px;flex-wrap:wrap}
-    button{border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer;font-size:13px}
-    button:disabled{opacity:.5;cursor:not-allowed}
-    .primary{background:#2563eb;color:white}
-    .dark{background:#172033;color:white}
-    .light{background:white;border:1px solid #e2e8f0;color:#334155}
-    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:27px 0}
-    .card,.panel{background:white;border:1px solid #e8edf4;border-radius:16px;padding:20px;box-shadow:0 4px 18px #17203308}
-    .stat-label{font-size:13px;color:#718096;font-weight:600}
-    .stat-value{font-size:29px;font-weight:800;margin-top:12px;letter-spacing:-1px}
-    .stat-note{font-size:12px;color:#94a3b8;margin-top:5px}
-    .red{color:#dc2626}.green{color:#059669}.blue{color:#2563eb}
-    .content{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(270px,.8fr);gap:18px}
-    .panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-    h2{font-size:17px;margin:0;font-weight:800}
-    .search{padding:10px 12px;border:1px solid #e2e8f0;border-radius:9px;outline:none;min-width:190px}
-    .search:focus,input:focus,select:focus{border-color:#60a5fa;outline:2px solid #dbeafe}
-    .table-wrap{overflow-x:auto}
-    table{border-collapse:collapse;width:100%;min-width:580px}
-    th{text-align:left;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.7px;padding:12px 10px;border-bottom:1px solid #edf1f6}
-    td{padding:14px 10px;border-bottom:1px solid #f0f3f7;font-size:13px}
-    tr:last-child td{border-bottom:0}
-    .product{font-weight:750}.muted{color:#94a3b8;font-size:12px;margin-top:4px}
-    .pill{display:inline-block;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:750;background:#dcfce7;color:#15803d}
-    .pill.low{background:#fee2e2;color:#b91c1c}
-    .pill.medium{background:#fef3c7;color:#92400e}
-    .alert{padding:13px;border:1px solid #fee2e2;background:#fff7f7;border-radius:11px;margin-bottom:10px}
-    .alert strong{font-size:13px;display:block}.alert span{font-size:12px;color:#9f1239;display:block;margin-top:5px}
-    .empty{padding:25px;text-align:center;color:#94a3b8;font-size:13px}
-    .notice{margin:15px 0;padding:12px 15px;border-radius:10px;font-size:13px;display:none}
-    .notice.show{display:block}.notice.error{background:#fee2e2;color:#991b1b}.notice.success{background:#dcfce7;color:#166534}
-    dialog{border:0;border-radius:17px;padding:0;width:min(480px,calc(100% - 28px));box-shadow:0 25px 80px #0f172a40}
-    dialog::backdrop{background:#0f172a80;backdrop-filter:blur(3px)}
-    .modal{padding:24px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
-    .close{background:#f1f5f9;color:#334155;padding:7px 11px}
-    .field{margin:13px 0}.field label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px}
-    .field input,.field select{width:100%;padding:11px;border:1px solid #dbe3ed;border-radius:9px;font-size:14px;background:white}
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
-    .modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}
-    .footer{font-size:12px;color:#94a3b8;text-align:center;margin:25px 0 5px}
-    @media(max-width:950px){.stats{grid-template-columns:repeat(2,1fr)}.content{grid-template-columns:1fr}}
-    @media(max-width:560px){.layout{padding:18px}.stats{gap:10px}.card{padding:15px}.stat-value{font-size:24px}.form-grid{grid-template-columns:1fr}}
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventory | TaskMatrix</title>
+  <link rel="stylesheet" href="/src/css/main.css" />
 </head>
-<body>
-  <main class="layout">
-    <header class="top">
-      <div>
-        <div class="eyebrow">ERP / Operations</div>
-        <h1>Inventory Management</h1>
-        <div class="sub">Monitor stock levels, manage products and track inventory movements.</div>
-      </div>
-      <div class="actions">
-        <button class="light" id="refreshBtn">↻ Refresh</button>
-        <button class="dark" id="movementBtn">＋ Stock Movement</button>
-        <button class="primary" id="productBtn">＋ Add Product</button>
-      </div>
-    </header>
 
-    <div id="notice" class="notice"></div>
-
-    <section class="stats">
-      <div class="card"><div class="stat-label">Total Products</div><div class="stat-value blue" id="totalProducts">—</div><div class="stat-note">Active products in inventory</div></div>
-      <div class="card"><div class="stat-label">Low Stock Items</div><div class="stat-value red" id="lowProducts">—</div><div class="stat-note">At or below reorder level</div></div>
-      <div class="card"><div class="stat-label">Total Stock Units</div><div class="stat-value" id="totalUnits">—</div><div class="stat-note">Combined available quantity</div></div>
-      <div class="card"><div class="stat-label">Inventory Value</div><div class="stat-value green" id="stockValue">—</div><div class="stat-note">Based on product cost price</div></div>
-    </section>
-
-    <section class="content">
-      <div class="panel">
-        <div class="panel-head">
-          <div><h2>Product Inventory</h2><div class="muted">Current stock and reorder levels</div></div>
-          <input class="search" id="searchInput" placeholder="Search products or SKU...">
+<body class="app-body">
+  <div id="topbar"></div>
+  <main class="app-main inventory-page">
+    <div class="page-container">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">Operations</div>
+          <h1 class="page-title">Inventory</h1>
+          <p class="page-description">Monitor stock levels, products, and inventory movements.</p>
         </div>
-        <div class="table-wrap">
+        <div class="inventory-actions">
+          <button type="button" class="light" id="refreshBtn">Refresh</button>
+          <button type="button" class="dark" id="movementBtn">＋ Stock movement</button>
+          <button type="button" class="primary" id="productBtn">＋ Add product</button>
+        </div>
+      </header>
+
+      <div id="notice" class="notice" role="status"></div>
+
+      <section class="inventory-stats" aria-label="Inventory statistics">
+        <article class="surface-card metric-card"><div class="metric-label">Total products</div><div class="metric-value" id="totalProducts">—</div><div class="metric-note">Active products in inventory</div></article>
+        <article class="surface-card metric-card"><div class="metric-label">Low stock items</div><div class="metric-value text-red-600" id="lowProducts">—</div><div class="metric-note">At or below reorder level</div></article>
+        <article class="surface-card metric-card"><div class="metric-label">Total stock units</div><div class="metric-value" id="totalUnits">—</div><div class="metric-note">Combined available quantity</div></article>
+        <article class="surface-card metric-card"><div class="metric-label">Inventory value</div><div class="metric-value text-green-700" id="stockValue">—</div><div class="metric-note">Based on product cost price</div></article>
+      </section>
+
+      <section class="inventory-content">
+        <article class="surface-card inventory-panel p-5">
+          <div class="inventory-panel-head">
+            <div><h2>Product inventory</h2><div class="muted">Current stock and reorder levels</div></div>
+            <input class="search" id="searchInput" placeholder="Search products or SKU..." aria-label="Search products or SKU" />
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Product</th><th>SKU</th><th>Stock</th><th>Reorder level</th><th>Status</th></tr></thead>
+              <tbody id="productRows"><tr><td colspan="5" class="empty">Loading inventory...</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+
+        <aside class="surface-card inventory-panel p-5">
+          <div class="inventory-panel-head">
+            <div><h2>Low stock alerts</h2><div class="muted">Items requiring attention</div></div>
+            <span class="pill low" id="alertCount">0 Alerts</span>
+          </div>
+          <div id="alertList"><div class="empty">Loading alerts...</div></div>
+        </aside>
+      </section>
+
+      <section class="surface-card inventory-panel p-5 mt-4">
+        <div class="inventory-panel-head">
+          <div><h2>Recent stock movements</h2><div class="muted">Latest inventory transactions</div></div>
+        </div>
+        <div class="table-scroll">
           <table>
-            <thead><tr><th>Product</th><th>SKU</th><th>Stock</th><th>Reorder Level</th><th>Status</th></tr></thead>
-            <tbody id="productRows"><tr><td colspan="5" class="empty">Loading inventory...</td></tr></tbody>
+            <thead><tr><th>Product</th><th>Movement</th><th>Quantity</th><th>Stock after</th><th>Date</th><th>Updated by</th></tr></thead>
+            <tbody id="movementRows"><tr><td colspan="6" class="empty">Loading movements...</td></tr></tbody>
           </table>
         </div>
-      </div>
+      </section>
+      <div class="inventory-footer">Inventory records from your database</div>
+    </div>
 
-      <aside class="panel">
-        <div class="panel-head"><div><h2>Low Stock Alerts</h2><div class="muted">Items requiring attention</div></div><span class="pill low" id="alertCount">0 Alerts</span></div>
-        <div id="alertList"><div class="empty">Loading alerts...</div></div>
-      </aside>
-    </section>
+    <dialog id="productDialog">
+      <form class="modal" id="productForm">
+        <div class="modal-head"><h2>Add new product</h2><button type="button" class="close" data-close="productDialog" aria-label="Close">✕</button></div>
+        <div class="field"><label>Product name *</label><input name="name" required maxlength="150" placeholder="e.g. Wireless Mouse" /></div>
+        <div class="form-grid">
+          <div class="field"><label>SKU *</label><input name="sku" required maxlength="60" placeholder="PRD-001" /></div>
+          <div class="field"><label>Category</label><input name="category" placeholder="Electronics" /></div>
+          <div class="field"><label>Unit</label><select name="unit"><option value="pcs">Pieces</option><option value="box">Box</option><option value="kg">Kilogram</option><option value="liter">Liter</option><option value="pack">Pack</option></select></div>
+          <div class="field"><label>Reorder level</label><input name="reorder_level" type="number" min="0" step="0.01" value="5" /></div>
+          <div class="field"><label>Cost price</label><input name="cost_price" type="number" min="0" step="0.01" value="0" /></div>
+          <div class="field"><label>Selling price</label><input name="selling_price" type="number" min="0" step="0.01" value="0" /></div>
+        </div>
+        <div class="modal-actions"><button type="button" class="light secondary-button px-4 py-2" data-close="productDialog">Cancel</button><button class="primary px-4 py-2" type="submit">Save product</button></div>
+      </form>
+    </dialog>
 
-    <section class="panel" style="margin-top:18px">
-      <div class="panel-head"><div><h2>Recent Stock Movements</h2><div class="muted">Latest inventory transactions</div></div></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Product</th><th>Movement</th><th>Quantity</th><th>Stock After</th><th>Date</th><th>Updated By</th></tr></thead>
-          <tbody id="movementRows"><tr><td colspan="6" class="empty">Loading movements...</td></tr></tbody>
-        </table>
-      </div>
-    </section>
-    <div class="footer">ERP Inventory Control · Live data from your database</div>
+    <dialog id="movementDialog">
+      <form class="modal" id="movementForm">
+        <div class="modal-head"><h2>Record stock movement</h2><button type="button" class="close" data-close="movementDialog" aria-label="Close">✕</button></div>
+        <div class="field"><label>Select product *</label><select name="product_id" id="movementProduct" required></select></div>
+        <div class="field"><label>Movement type *</label><select name="movement_type" required><option value="IN">Stock IN — Add stock</option><option value="OUT">Stock OUT — Remove stock</option><option value="ADJUSTMENT">Adjustment — Set exact stock</option></select></div>
+        <div class="field"><label>Quantity *</label><input name="quantity" type="number" min="0.01" step="0.01" required placeholder="Enter quantity" /></div>
+        <div class="field"><label>Note</label><input name="note" maxlength="255" placeholder="Purchase, damaged goods, correction..." /></div>
+        <div class="modal-actions"><button type="button" class="light secondary-button px-4 py-2" data-close="movementDialog">Cancel</button><button class="primary px-4 py-2" type="submit">Save movement</button></div>
+      </form>
+    </dialog>
   </main>
-
-  <dialog id="productDialog">
-    <form class="modal" id="productForm">
-      <div class="modal-head"><h2>Add New Product</h2><button type="button" class="close" data-close="productDialog">✕</button></div>
-      <div class="field"><label>Product Name *</label><input name="name" required maxlength="150" placeholder="e.g. Wireless Mouse"></div>
-      <div class="form-grid">
-        <div class="field"><label>SKU *</label><input name="sku" required maxlength="60" placeholder="PRD-001"></div>
-        <div class="field"><label>Category</label><input name="category" placeholder="Electronics"></div>
-        <div class="field"><label>Unit</label><select name="unit"><option value="pcs">Pieces</option><option value="box">Box</option><option value="kg">Kilogram</option><option value="liter">Liter</option><option value="pack">Pack</option></select></div>
-        <div class="field"><label>Reorder Level</label><input name="reorder_level" type="number" min="0" step="0.01" value="5"></div>
-        <div class="field"><label>Cost Price</label><input name="cost_price" type="number" min="0" step="0.01" value="0"></div>
-        <div class="field"><label>Selling Price</label><input name="selling_price" type="number" min="0" step="0.01" value="0"></div>
-      </div>
-      <div class="modal-actions"><button type="button" class="light" data-close="productDialog">Cancel</button><button class="primary" type="submit">Save Product</button></div>
-    </form>
-  </dialog>
-
-  <dialog id="movementDialog">
-    <form class="modal" id="movementForm">
-      <div class="modal-head"><h2>Record Stock Movement</h2><button type="button" class="close" data-close="movementDialog">✕</button></div>
-      <div class="field"><label>Select Product *</label><select name="product_id" id="movementProduct" required></select></div>
-      <div class="field"><label>Movement Type *</label><select name="movement_type" required><option value="IN">Stock IN — Add stock</option><option value="OUT">Stock OUT — Remove stock</option><option value="ADJUSTMENT">Adjustment — Set exact stock</option></select></div>
-      <div class="field"><label>Quantity *</label><input name="quantity" type="number" min="0.01" step="0.01" required placeholder="Enter quantity"></div>
-      <div class="field"><label>Note</label><input name="note" maxlength="255" placeholder="Purchase, damaged goods, correction..."></div>
-      <div class="modal-actions"><button type="button" class="light" data-close="movementDialog">Cancel</button><button class="primary" type="submit">Save Movement</button></div>
-    </form>
-  </dialog>
-
   <script type="module" src="/src/js/inventory.js"></script>
 </body>
+
 </html>
