@@ -17,6 +17,7 @@ import leaveRoutes from './routes/leave.routes.js';
 import inventoryRoutes from './routes/inventory.routes.js';
 import { initDatabase } from './models/init-db.js';
 
+import inventoryRoutes from './routes/inventory.routes.js';
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -27,6 +28,7 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/accounting', salesRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/inventory', inventoryRoutes);
 app.use('/api/leave', leaveRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }));
@@ -133,6 +135,26 @@ async function ensureSchema() {
     CONSTRAINT fk_stock_product FOREIGN KEY (product_id) REFERENCES products(id),
     CONSTRAINT fk_stock_user FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
   )`);
+}
+
+async function seedUsers() {
+  const defaults = [
+    ['admin',      'admin123',      'admin'],
+    ['sales',      'sales123',      'sales'],
+    ['accounting', 'accounting123', 'accounting'],
+    ['marketing',  'marketing123',  'marketing']
+  ];
+  for (const [username, password, role] of defaults) {
+    const [rows] = await pool.query('SELECT id FROM users WHERE username = ?', [username]);
+    if (rows.length === 0) {
+      const hash = await bcrypt.hash(password, 10);
+      await pool.query(
+        'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+        [username, hash, role]
+      );
+      console.log(`âœ“ Seeded user: ${username} / ${password} (${role})`);
+    }
+  }
 }
 
 app.listen(PORT, async () => {
