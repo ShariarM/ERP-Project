@@ -1,5 +1,9 @@
-const API = '/api/inventory';
-const token = localStorage.getItem('token');
+import { guard, renderTopbar } from './guard.js';
+import { request as apiRequest } from './api.js';
+
+const currentUser = guard(['admin', 'accounting', 'sales']);
+if (currentUser) renderTopbar(currentUser);
+
 let products = [];
 let lowStock = [];
 let movements = [];
@@ -10,50 +14,16 @@ const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({
   '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
 }[c]));
 
-const user = (() => {
-  try { return JSON.parse(localStorage.getItem('user') || '{}'); }
-  catch { return {}; }
-})();
-
-const role = String(user.role || '').toLowerCase();
+const role = currentUser ? currentUser.role : '';
 const canManage = ['admin', 'accounting'].includes(role);
 
-if (!token) {
-  window.location.href = '/';
-}
-
-if (!['admin', 'accounting', 'sales'].includes(role)) {
-  document.body.innerHTML = '<main style="font-family:Arial;padding:50px"><h2>Access denied</h2><p>Your role cannot access inventory.</p><a href="/">Return to login</a></main>';
-}
-
+// Sales staff can look, but only admin/accounting can change stock.
 if (!canManage) {
   $('productBtn').hidden = true;
   $('movementBtn').hidden = true;
 }
 
-async function request(path, options = {}) {
-  const response = await fetch(`${API}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      ...(options.headers || {})
-    }
-  });
-
-  let data;
-  try { data = await response.json(); } catch { data = null; }
-
-  if (response.status === 401) {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = '/';
-    throw new Error('Session expired. Please log in again.');
-  }
-
-  if (!response.ok) throw new Error(data?.error || `Request failed (${response.status})`);
-  return data;
-}
+const request = (path, options) => apiRequest(`/inventory${path}`, options);
 
 function showNotice(message, type = 'success') {
   const el = $('notice');
@@ -192,4 +162,4 @@ $('movementForm').addEventListener('submit', async (event) => {
   }
 });
 
-loadDashboard();
+if (currentUser) loadDashboard();

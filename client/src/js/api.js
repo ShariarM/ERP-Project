@@ -47,7 +47,6 @@ export const deleteCustomer = (id) => request(`/customers/${id}`, { method: 'DEL
 
 export const listSales      = () => request('/sales');
 export const createSale     = (s) => request('/sales', { method: 'POST', body: JSON.stringify(s) });
-export const deleteSale     = (id) => request(`/sales/${id}`, { method: 'DELETE' });
 export const salesSummary   = () => request('/sales/summary');
 // Attendance
 export const clockIn = () => request('/attendance/clock-in', { method: 'POST' });
@@ -63,3 +62,7 @@ export const updateLeaveStatus = (id, status) => request(`/leave/${id}/status`, 
 export const heartbeat = () => request('/auth/heartbeat', { method: 'POST' });
 export const logoutServer = () => request('/auth/logout', { method: 'POST' });
 export const activeUsers = () => request('/auth/active-users');
+
+// Sales workflow: draft > confirmed > invoiced > paid
+export const updateSaleStatus = (id, status) => 
+  request(`/sales/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
