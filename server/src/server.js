@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import attendanceRoutes from './routes/attendance.routes.js';
 import leaveRoutes from './routes/leave.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
@@ -28,10 +29,11 @@ app.use('/api/accounting', salesRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/leave', leaveRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-// â”€â”€â”€ Seed default users (idempotent) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Seed default users (idempotent) ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼
 async function ensurePresenceColumns() {
   const needed = [
     ['last_seen_at', 'DATETIME NULL'],
@@ -43,7 +45,7 @@ async function ensurePresenceColumns() {
         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = ?`, [col]);
     if (!rows[0].n) {
       await pool.query(`ALTER TABLE users ADD COLUMN ${col} ${def}`);
-      console.log(`âœ“ Added users.${col}`);
+      console.log(`├ó┼ôΓÇ£ Added users.${col}`);
     }
   }
 }
@@ -63,17 +65,17 @@ async function seedUsers() {
         'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
         [username, hash, role]
       );
-      console.log(`âœ“ Seeded user: ${username} / ${password} (${role})`);
+      console.log('Default user ready: ' + username + ' (' + role + ')');
     }
   }
 }
 
 app.listen(PORT, async () => {
-  console.log(`ðŸš€ Server on http://localhost:${PORT}`);
+  console.log('Server running at http://localhost:' + PORT);
   try {
     await ensurePresenceColumns();
     await seedUsers();
   } catch (err) {
-    console.warn('âš  Could not seed users â€” did you import db.sql?', err.message);
+    console.error('Database initialization failed:', err);
   }
 });

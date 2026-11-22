@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { notifyUsersByRole } from '../services/notification.service.js';
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -30,6 +31,20 @@ export async function create(req, res) {
       [customer_id || null, Number(amount), description || null, sale_date || today()]
     );
     const [rows] = await pool.query('SELECT * FROM sales WHERE id = ?', [result.insertId]);
+
+    try {
+      await notifyUsersByRole({
+        roles: ['admin', 'accounting'],
+        excludeUserId: req.user.id,
+        eventType: 'sales.created',
+        title: 'New Sale Recorded',
+        message: `Sale #${result.insertId} was recorded for ${Number(amount).toFixed(2)}.`,
+        link: '/pages/accounting/'
+      });
+    } catch (notificationError) {
+      console.error('Sales notification failed:', notificationError);
+    }
+
     res.status(201).json(rows[0]);
   } catch (err) {
     console.error(err);

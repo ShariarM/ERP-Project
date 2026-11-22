@@ -52,3 +52,8 @@ export const updateLeaveStatus = (id, status) => request(`/leave/${id}/status`, 
 export const heartbeat = () => request('/auth/heartbeat', { method: 'POST' });
 export const logoutServer = () => request('/auth/logout', { method: 'POST' });
 export const activeUsers = () => request('/auth/active-users');
+
+// Notifications
+export const listNotifications = () => request('/notifications');
+export const markNotificationRead = (id) =>
+  request(`/notifications/${encodeURIComponent(id)}/read`, { method: 'PATCH' });
