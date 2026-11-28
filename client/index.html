@@ -12,9 +12,9 @@
   <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
     <h1 class="text-2xl font-bold mb-6 text-center text-slate-800">ERP Login</h1>
     <form id="loginForm" class="space-y-4">
-      <input id="username" type="text" placeholder="Username" required value="admin"
+      <input id="email" type="email" placeholder="Email" required autocomplete="username"
         class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      <input id="password" type="password" placeholder="Password" required value="admin123"
+      <input id="password" type="password" placeholder="Password" required autocomplete="current-password"
         class="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
       <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-medium">
         Sign In
@@ -25,12 +25,6 @@
       </p>
       <p id="error" class="text-red-600 text-sm hidden text-center"></p>
     </form>
-    <div class="mt-6 text-xs text-slate-500 text-center space-y-1">
-      <p><b>admin / admin123</b> — full access</p>
-      <p><b>sales / sales123</b> — customers</p>
-      <p><b>accounting / accounting123</b> — accounting</p>
-      <p><b>marketing / marketing123</b> — marketing</p>
-    </div>
   </div>
   <script type="module" src="/src/js/login.js"></script>
 </body>

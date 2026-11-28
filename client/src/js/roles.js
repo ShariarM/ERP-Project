@@ -9,7 +9,7 @@ export const ROLES = {
 export const MENU = [
   { label: 'Dashboard',  href: '/pages/admin/dashboard.html',  roles: ['admin'] },
   { label: 'Customers',  href: '/pages/customers/index.html',  roles: ['admin', 'sales'] },
-  { label: 'Accounting', href: '/pages/accounting/index.html', roles: ['admin', 'accounting'] },
+  { label: 'Accounting', href: '/pages/accounting/index.html', roles: ['admin', 'accounting', 'sales'] },
   { label: 'Marketing',  href: '/pages/marketing/index.html',  roles: ['admin', 'marketing'] },
   { label: 'Inventory', href: '/pages/inventory/index.html', roles: ['admin', 'accounting', 'sales'] },
   { label: 'Attendance', href: '/pages/attendance/index.html', roles: ['admin', 'sales', 'accounting', 'marketing'] },

@@ -62,11 +62,27 @@ export async function getLeaves(req, res) {
   }
 }
 
-// Route is already restricted to admin (leave.routes.js)
+// Route is restricted to admin (leave.routes.js); the workflow allows pending -> approved/rejected only
 export async function updateLeaveStatus(req, res) {
+  const id = Number(req.params.id);
+  const nextStatus = String(req.body?.status ?? '');
+  if (!Number.isInteger(id)) return res.status(400).json({ error: 'Invalid leave id' });
+
+  const connection = await pool.getConnection();
   try {
-    const { status } = req.body ?? {};
-    if (!['approved', 'rejected'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+    await connection.beginTransaction();
+
+    const [rows] = await connection.query('SELECT status FROM leave_requests WHERE id = ? FOR UPDATE', [id]);
+    if (!rows.length) throw httpError(404, 'Leave request not found');
+    const currentStatus = rows[0].status;
+
+    validateTransition('leave', currentStatus, nextStatus, req.user.role);
+
+    await connection.query('UPDATE leave_requests SET status = ? WHERE id = ?', [nextStatus, id]);
+    await connection.query(
+      'INSERT INTO workflow_logs (entity_type, entity_id, from_status, to_status, changed_by) VALUES (?, ?, ?, ?, ?)',
+      ['leave', id, currentStatus, nextStatus, req.user.id]
+    );
 
     const [leaveRows] = await pool.query(
       'SELECT user_id, type FROM leave_requests WHERE id = ?',
@@ -96,7 +112,11 @@ export async function updateLeaveStatus(req, res) {
 
     res.json({ message: `Leave ${status}` });
   } catch (err) {
+    await connection.rollback();
+    if (err.status) return res.status(err.status).json({ error: err.message });
     console.error('updateLeaveStatus:', err);
     res.status(500).json({ error: 'Server error' });
+  } finally {
+    connection.release();
   }
 }

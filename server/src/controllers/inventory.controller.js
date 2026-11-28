@@ -86,9 +86,12 @@ export async function addStockMovement(req, res) {
   const { product_id, movement_type, quantity, note } = req.body;
   const amount = Number(quantity);
 
-  if (!product_id || !['IN', 'OUT', 'ADJUSTMENT'].includes(movement_type) ||
-      !Number.isFinite(amount) || amount <= 0) {
-    return res.status(400).json({ error: 'Enter a valid product, movement type and positive quantity' });
+  // IN / OUT need a positive quantity; ADJUSTMENT sets the exact stock, so 0 is allowed
+  const minimum = movement_type === 'ADJUSTMENT' ? 0 : Number.MIN_VALUE;
+  if (!Number.isInteger(Number(product_id)) || Number(product_id) <= 0 ||
+      !['IN', 'OUT', 'ADJUSTMENT'].includes(movement_type) ||
+      !Number.isFinite(amount) || amount < minimum) {
+    return res.status(400).json({ error: 'Enter a valid product, movement type and quantity' });
   }
 
   const connection = await pool.getConnection();

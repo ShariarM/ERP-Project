@@ -1,29 +1,43 @@
-const BASE = '/api';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from './firebase.js';
+import { clearSession } from './session.js';
 
-function getToken() { return localStorage.getItem('token'); }
+// Firebase restores a saved login asynchronously when a page opens; wait for that once.
+export const authReady = new Promise((resolve) => {
+  const stop = onAuthStateChanged(auth, (user) => { stop(); resolve(user); });
+});
 
-async function request(path, options = {}) {
+export async function request(path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-  const token = getToken();
-  if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`${BASE}${path}`, { ...options, headers });
+  await authReady;
+  if (auth.currentUser) {
+    // getIdToken() returns a fresh token (Firebase renews it automatically every hour)
+    headers['Authorization'] = `Bearer ${await auth.currentUser.getIdToken()}`;
+  }
+
+  const res = await fetch(`/api${path}`, { ...options, headers });
 
   let data = null;
   try { data = await res.json(); } catch {}
 
   if (res.status === 401) {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearSession();
+    await signOut(auth).catch(() => {});
     if (window.location.pathname !== '/') window.location.href = '/';
   }
 
-  if (!res.ok) throw new Error((data && data.error) || `Request failed (${res.status})`);
+  if (!res.ok) {
+    const err = new Error((data && data.error) || `Request failed (${res.status})`);
+    err.code = data && data.code;
+    throw err;
+  }
   return data;
 }
 
-export const login          = (username, password) =>
-  request('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) });
+// Signup/login are done by Firebase in the browser. After signup we create the MySQL row (role).
+export const syncUser = (role) =>
+  request('/auth/sync-user', { method: 'POST', body: JSON.stringify({ role }) });
 export const me             = () => request('/auth/me');
 
 export const listCustomers  = () => request('/customers');
@@ -33,11 +47,7 @@ export const deleteCustomer = (id) => request(`/customers/${id}`, { method: 'DEL
 
 export const listSales      = () => request('/sales');
 export const createSale     = (s) => request('/sales', { method: 'POST', body: JSON.stringify(s) });
-export const deleteSale     = (id) => request(`/sales/${id}`, { method: 'DELETE' });
 export const salesSummary   = () => request('/sales/summary');
-// ADD THIS BELOW THE login EXPORT
-export const signup = (username, password, role) =>
-  request('/auth/signup', { method: 'POST', body: JSON.stringify({ username, password, role }) });
 // Attendance
 export const clockIn = () => request('/attendance/clock-in', { method: 'POST' });
 export const clockOut = () => request('/attendance/clock-out', { method: 'POST' });

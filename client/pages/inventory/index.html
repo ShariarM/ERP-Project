@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inventory Management | ERP</title>
+  <link rel="stylesheet" href="/src/css/main.css" />
   <style>
+    body{padding-left:256px}
     *{box-sizing:border-box}
     body{margin:0;background:#f4f7fb;color:#172033;font-family:Inter,Segoe UI,Arial,sans-serif}
     .layout{max-width:1440px;margin:auto;padding:30px}
@@ -57,6 +59,7 @@
   </style>
 </head>
 <body>
+  <div id="topbar"></div>
   <main class="layout">
     <header class="top">
       <div>
@@ -133,7 +136,7 @@
       <div class="modal-head"><h2>Record Stock Movement</h2><button type="button" class="close" data-close="movementDialog">✕</button></div>
       <div class="field"><label>Select Product *</label><select name="product_id" id="movementProduct" required></select></div>
       <div class="field"><label>Movement Type *</label><select name="movement_type" required><option value="IN">Stock IN — Add stock</option><option value="OUT">Stock OUT — Remove stock</option><option value="ADJUSTMENT">Adjustment — Set exact stock</option></select></div>
-      <div class="field"><label>Quantity *</label><input name="quantity" type="number" min="0.01" step="0.01" required placeholder="Enter quantity"></div>
+      <div class="field"><label>Quantity *</label><input name="quantity" type="number" min="0" step="0.01" required placeholder="Enter quantity"></div>
       <div class="field"><label>Note</label><input name="note" maxlength="255" placeholder="Purchase, damaged goods, correction..."></div>
       <div class="modal-actions"><button type="button" class="light" data-close="movementDialog">Cancel</button><button class="primary" type="submit">Save Movement</button></div>
     </form>
