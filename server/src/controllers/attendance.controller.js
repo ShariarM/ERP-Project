@@ -1,4 +1,5 @@
-import pool from '../config/db.js';
+﻿import pool from '../config/db.js';
+import { notifyUser } from '../services/notification.service.js';
 
 const DHAKA_NOW = "CONVERT_TZ(UTC_TIMESTAMP(), '+00:00', '+06:00')";
 
@@ -9,6 +10,17 @@ export async function clockIn(req, res) {
        VALUES (?, DATE(${DHAKA_NOW}), TIME(${DHAKA_NOW}))`,
       [req.user.id]
     );
+    try {
+      await notifyUser({
+        userId: req.user.id,
+        eventType: 'attendance.clock_in',
+        title: 'Attendance Check-in',
+        message: 'Your attendance check-in was recorded successfully.'
+      });
+    } catch (notificationError) {
+      console.error('Check-in notification failed:', notificationError);
+    }
+
     res.json({ message: 'Clocked in successfully' });
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
@@ -33,6 +45,17 @@ export async function clockOut(req, res) {
       return res.status(400).json({
         error: 'No active clock-in found for today'
       });
+    }
+
+    try {
+      await notifyUser({
+        userId: req.user.id,
+        eventType: 'attendance.clock_out',
+        title: 'Attendance Check-out',
+        message: 'Your attendance check-out was recorded successfully.'
+      });
+    } catch (notificationError) {
+      console.error('Check-out notification failed:', notificationError);
     }
 
     res.json({ message: 'Clocked out successfully' });

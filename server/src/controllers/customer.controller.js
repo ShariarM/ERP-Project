@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { notifyUsersByRole } from '../services/notification.service.js';
 
 export async function list(req, res) {
   try {
@@ -30,6 +31,20 @@ export async function create(req, res) {
       [name, email || null, phone || null, address || null]
     );
     const [rows] = await pool.query('SELECT * FROM customers WHERE id = ?', [result.insertId]);
+
+    try {
+      await notifyUsersByRole({
+        roles: ['admin', 'sales'],
+        excludeUserId: req.user.id,
+        eventType: 'customer.created',
+        title: 'New Customer Added',
+        message: `Customer ${name} was added to the customer records.`,
+        link: '/pages/customers/'
+      });
+    } catch (notificationError) {
+      console.error('Customer creation notification failed:', notificationError);
+    }
+
     res.status(201).json(rows[0]);
   } catch (err) {
     console.error(err);
@@ -46,6 +61,20 @@ export async function update(req, res) {
     );
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Not found' });
     const [rows] = await pool.query('SELECT * FROM customers WHERE id = ?', [req.params.id]);
+
+    try {
+      await notifyUsersByRole({
+        roles: ['admin', 'sales'],
+        excludeUserId: req.user.id,
+        eventType: 'customer.updated',
+        title: 'Customer Information Updated',
+        message: `Customer ${name} was updated.`,
+        link: '/pages/customers/'
+      });
+    } catch (notificationError) {
+      console.error('Customer update notification failed:', notificationError);
+    }
+
     res.json(rows[0]);
   } catch {
     res.status(500).json({ error: 'Failed to update' });

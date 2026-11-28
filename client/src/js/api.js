@@ -63,6 +63,7 @@ export const heartbeat = () => request('/auth/heartbeat', { method: 'POST' });
 export const logoutServer = () => request('/auth/logout', { method: 'POST' });
 export const activeUsers = () => request('/auth/active-users');
 
-// Sales workflow: draft > confirmed > invoiced > paid
-export const updateSaleStatus = (id, status) => 
-  request(`/sales/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
+// Notifications
+export const listNotifications = () => request('/notifications');
+export const markNotificationRead = (id) =>
+  request(`/notifications/${encodeURIComponent(id)}/read`, { method: 'PATCH' });

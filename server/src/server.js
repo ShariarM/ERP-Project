@@ -4,6 +4,10 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import bcrypt from 'bcryptjs';
+import attendanceRoutes from './routes/attendance.routes.js';
+import leaveRoutes from './routes/leave.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
@@ -30,49 +34,13 @@ app.use('/api/accounting', salesRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/leave', leaveRoutes);
-app.use('/api/inventory', inventoryRoutes);
-app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }));
-
-// In production (e.g. on Render) this server also serves the website built by "npm run build".
-// On your PC with "npm run dev" there is no dist folder, so this part does nothing.
-const dist = path.resolve(__dirname, '../../dist');
-if (fs.existsSync(dist)) {
-  app.use(express.static(dist));
-  app.use((_req, res) => res.status(404).sendFile(path.join(dist, 'index.html')));
-}
+app.use('/api/notifications', notificationRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-// First start on an empty database (e.g. a new cloud database): create everything from db.sql.
-async function ensureDatabase() {
-  let needsInit = false;
-  try {
-    const [rows] = await pool.query(
-      `SELECT COUNT(*) AS n FROM information_schema.TABLES
-        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'`);
-    needsInit = rows[0].n === 0;
-  } catch (err) {
-    if (err.code !== 'ER_BAD_DB_ERROR') throw err;
-    needsInit = true;
-  }
-  if (needsInit) {
-    console.log('Empty database found: creating the tables from db.sql ...');
-    await initDatabase();
-  }
-}
-
-async function hasColumn(table, column) {
-  const [rows] = await pool.query(
-    `SELECT COUNT(*) AS n FROM information_schema.COLUMNS
-      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?`, [table, column]);
-  return rows[0].n > 0;
-}
-
-// Brings an older database up to date, so a forgotten re-import of db.sql cannot break the app.
-// (db.sql stays the main source; keep the table definitions below in sync with it.)
-async function ensureSchema() {
-  // users: online status + Firebase link
-  const userColumns = [
+// ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Seed default users (idempotent) ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼
+async function ensurePresenceColumns() {
+  const needed = [
     ['last_seen_at', 'DATETIME NULL'],
     ['is_logged_in', 'TINYINT(1) NOT NULL DEFAULT 0'],
     ['firebase_uid', 'VARCHAR(128) NULL UNIQUE']
@@ -80,7 +48,7 @@ async function ensureSchema() {
   for (const [col, def] of userColumns) {
     if (!(await hasColumn('users', col))) {
       await pool.query(`ALTER TABLE users ADD COLUMN ${col} ${def}`);
-      console.log(`+ Added users.${col}`);
+      console.log(`├ó┼ôΓÇ£ Added users.${col}`);
     }
   }
   // Passwords now live in Firebase, so MySQL must allow an empty password column.
@@ -152,18 +120,18 @@ async function seedUsers() {
         'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
         [username, hash, role]
       );
-      console.log(`âœ“ Seeded user: ${username} / ${password} (${role})`);
+      console.log('Default user ready: ' + username + ' (' + role + ')');
     }
   }
 }
 
 app.listen(PORT, async () => {
-  console.log(`Server on http://localhost:${PORT}`);
+  console.log('Server running at http://localhost:' + PORT);
   try {
     await ensureDatabase();
     await ensureSchema();
     console.log('Database ready');
   } catch (err) {
-    console.warn('Database not ready. Is MySQL started and db.sql imported?', err.message);
+    console.error('Database initialization failed:', err);
   }
 });

@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { notifyUsersByRole } from '../services/notification.service.js';
 
 export async function getProducts(req, res) {
   try {
@@ -58,6 +59,19 @@ export async function createProduct(req, res) {
       ]
     );
 
+    try {
+      await notifyUsersByRole({
+        roles: ['admin'],
+        excludeUserId: req.user.id,
+        eventType: 'inventory.product_created',
+        title: 'New Product Added',
+        message: `Product ${name.trim()} (${sku.trim()}) was added to inventory.`,
+        link: '/pages/inventory/'
+      });
+    } catch (notificationError) {
+      console.error('Product notification failed:', notificationError);
+    }
+
     res.status(201).json({ message: 'Product created successfully', id: result.insertId });
   } catch (error) {
     if (error.code === 'ER_DUP_ENTRY') {
@@ -85,7 +99,7 @@ export async function addStockMovement(req, res) {
     await connection.beginTransaction();
 
     const [products] = await connection.query(
-      'SELECT id, stock_quantity FROM products WHERE id = ? AND is_active = 1 FOR UPDATE',
+      'SELECT id, name, sku, stock_quantity, reorder_level FROM products WHERE id = ? AND is_active = 1 FOR UPDATE',
       [product_id]
     );
 
@@ -119,6 +133,26 @@ export async function addStockMovement(req, res) {
     );
 
     await connection.commit();
+
+    const crossedReorderLevel =
+      Number(products[0].stock_quantity) > Number(products[0].reorder_level) &&
+      next <= Number(products[0].reorder_level);
+
+    try {
+      await notifyUsersByRole({
+        roles: ['admin'],
+        excludeUserId: req.user.id,
+        eventType: crossedReorderLevel ? 'inventory.low_stock' : 'inventory.stock_updated',
+        title: crossedReorderLevel ? 'Low Stock Alert' : 'Stock Updated',
+        message: crossedReorderLevel
+          ? `${products[0].name} (${products[0].sku}) has reached its reorder level. Current stock: ${next}.`
+          : `Stock for ${products[0].name} (${products[0].sku}) was updated. Current stock: ${next}.`,
+        link: '/pages/inventory/'
+      });
+    } catch (notificationError) {
+      console.error('Stock notification failed:', notificationError);
+    }
+
     res.status(201).json({ message: 'Stock updated successfully', stock_quantity: next });
   } catch (error) {
     await connection.rollback();

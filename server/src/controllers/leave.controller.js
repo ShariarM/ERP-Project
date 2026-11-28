@@ -1,5 +1,5 @@
 import pool from '../config/db.js';
-import { validateTransition, httpError } from '../services/workflow.service.js';
+import { notifyUser, notifyUsersByRole } from '../services/notification.service.js';
 
 const TYPES = ['Sick', 'Vacation', 'Personal', 'Other'];
 const isDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
@@ -21,6 +21,20 @@ export async function applyLeave(req, res) {
       'INSERT INTO leave_requests (user_id, type, start_date, end_date, reason) VALUES (?, ?, ?, ?, ?)',
       [req.user.id, type, start, end, reason]
     );
+
+    try {
+      await notifyUsersByRole({
+        roles: ['admin'],
+        excludeUserId: req.user.id,
+        eventType: 'leave.submitted',
+        title: 'New Leave Application',
+        message: `${req.user.username || 'An employee'} submitted a ${type} leave application.`,
+        link: '/pages/leave/'
+      });
+    } catch (notificationError) {
+      console.error('Leave submission notification failed:', notificationError);
+    }
+
     res.status(201).json({ message: 'Leave applied successfully' });
   } catch (err) {
     console.error('applyLeave:', err);
@@ -70,8 +84,33 @@ export async function updateLeaveStatus(req, res) {
       ['leave', id, currentStatus, nextStatus, req.user.id]
     );
 
-    await connection.commit();
-    res.json({ message: `Leave ${nextStatus}` });
+    const [leaveRows] = await pool.query(
+      'SELECT user_id, type FROM leave_requests WHERE id = ?',
+      [req.params.id]
+    );
+
+    const [result] = await pool.query(
+      'UPDATE leave_requests SET status = ? WHERE id = ?',
+      [status, req.params.id]
+    );
+
+    if (!result.affectedRows) return res.status(404).json({ error: 'Leave request not found' });
+
+    if (leaveRows.length) {
+      try {
+        await notifyUser({
+          userId: leaveRows[0].user_id,
+          eventType: `leave.${status}`,
+          title: `Leave ${status}`,
+          message: `Your ${leaveRows[0].type} leave application has been ${status}.`,
+          link: '/pages/leave/'
+        });
+      } catch (notificationError) {
+        console.error('Leave status notification failed:', notificationError);
+      }
+    }
+
+    res.json({ message: `Leave ${status}` });
   } catch (err) {
     await connection.rollback();
     if (err.status) return res.status(err.status).json({ error: err.message });

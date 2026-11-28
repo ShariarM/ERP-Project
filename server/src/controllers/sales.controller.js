@@ -1,5 +1,5 @@
 import pool from '../config/db.js';
-import { validateTransition, httpError } from '../services/workflow.service.js';
+import { notifyUsersByRole } from '../services/notification.service.js';
 
 // Today's date in Dhaka (UTC+6), the same clock the attendance page uses
 const today = () => new Date(Date.now() + 6 * 3600 * 1000).toISOString().slice(0, 10);
@@ -38,11 +38,24 @@ export async function create(req, res) {
     // New sales start as 'draft' (default in the database)
     const [result] = await pool.query(
       'INSERT INTO sales (customer_id, amount, description, sale_date) VALUES (?, ?, ?, ?)',
-      [customer_id || null, amount, text, sale_date || today()]);
-    const [rows] = await pool.query(
-      `SELECT ${COLUMNS} FROM sales s LEFT JOIN customers c ON c.id = s.customer_id WHERE s.id = ?`,
-      [result.insertId]);
-    res.status(201).json({ ...rows[0], amount: Number(rows[0].amount) });
+      [customer_id || null, Number(amount), description || null, sale_date || today()]
+    );
+    const [rows] = await pool.query('SELECT * FROM sales WHERE id = ?', [result.insertId]);
+
+    try {
+      await notifyUsersByRole({
+        roles: ['admin', 'accounting'],
+        excludeUserId: req.user.id,
+        eventType: 'sales.created',
+        title: 'New Sale Recorded',
+        message: `Sale #${result.insertId} was recorded for ${Number(amount).toFixed(2)}.`,
+        link: '/pages/accounting/'
+      });
+    } catch (notificationError) {
+      console.error('Sales notification failed:', notificationError);
+    }
+
+    res.status(201).json(rows[0]);
   } catch (err) {
     console.error('sales create:', err);
     res.status(500).json({ error: 'Failed to create sale' });
